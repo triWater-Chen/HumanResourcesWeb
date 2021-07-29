@@ -5,10 +5,12 @@ import store from './store'
 import ElementUI from 'element-ui'
 import 'element-ui/lib/theme-chalk/index.css'
 import api from "./api/api";
+import {SessionStorage} from "./utils/sessionStorage";
 
 // 将 api 全局导入，之后就不需要 import，直接 this.api 即可
 // 同理，使用 this.$router 相当于 import router
 Vue.prototype.API = api
+Vue.prototype.SessionStorage = SessionStorage
 
 Vue.config.productionTip = false
 
