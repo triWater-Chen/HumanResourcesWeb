@@ -1,0 +1,87 @@
+<template>
+  <el-header class="homeHeader">
+    <div class="title">人事管理</div>
+    <el-dropdown class="userInfo" @command="commandHandler">
+      <span class="el-dropdown-link">
+        <i><img :src="user.userface" alt=""></i>{{user.name}}
+      </span>
+      <el-dropdown-menu slot="dropdown">
+        <el-dropdown-item command="userinfo">个人中心</el-dropdown-item>
+        <el-dropdown-item command="setting">设置</el-dropdown-item>
+        <el-dropdown-item command="logout" divided>登出</el-dropdown-item>
+      </el-dropdown-menu>
+    </el-dropdown>
+  </el-header>
+</template>
+
+<script>
+import {Message} from "element-ui";
+
+export default {
+  name: "Header",
+  data() {
+    return {
+      user: {
+        userface: 'http://bpic.588ku.com/element_pic/01/40/00/64573ce2edc0728.jpg',
+        name: 'AAA'
+      }
+    }
+  },
+  methods: {
+
+    commandHandler(param) {
+      if (param === 'logout') {
+        this.$confirm('此操作将注销登录, 是否继续?', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          this.API.logout()
+          window.sessionStorage.removeItem("USER")
+          this.$router.replace("/login")
+          Message.success("成功退出当前账号")
+        }).catch(() => {
+        })
+      }else if (param === 'userinfo') {
+        //
+      }
+    }
+  }
+
+}
+</script>
+
+<style scoped>
+
+.homeHeader {
+  background-color: #001529;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 15px;
+  box-sizing: border-box;
+}
+
+.homeHeader .title {
+  font-size: 30px;
+  font-family: 华文楷体;
+  color: #ffffff;
+  margin-left: 20px;
+}
+
+.homeHeader .userInfo {
+  cursor: pointer;
+}
+
+.el-dropdown-link img {
+  width: 40px;
+  height: 40px;
+  border-radius: 24px;
+  margin-right: 8px;
+}
+
+.el-dropdown-link {
+  display: flex;
+  align-items: center;
+}
+</style>

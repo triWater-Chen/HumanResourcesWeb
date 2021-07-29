@@ -42,6 +42,7 @@
 </template>
 
 <script>
+
 export default {
   name: "Login",
   data() {
@@ -69,8 +70,8 @@ export default {
       loading: false,
       checked: true,
       loginForm: {
-        username: '',
-        password: '',
+        username: 'user',
+        password: 'Ab123.',
       },
       rules: {
         username: [{validator: checkUser, trigger: 'change'}],
@@ -84,9 +85,11 @@ export default {
       // $refs 是对全部组件的查找，ref="loginForm" 即定义 <el-form> 表单组件的名字
       this.$refs.loginForm.validate((valid) => {
         if (valid) {
-          alert("success")
+          this.API.login(this.loginForm).then(res => {
+            this.SessionStorage.set("USER", res)
+            this.$router.replace('/')
+          })
         } else {
-          alert("error")
           return false
         }
       })
@@ -95,7 +98,7 @@ export default {
 }
 </script>
 
-<style>
+<style scoped>
 .loginContainer {
   border-radius: 15px;
   background-clip: padding-box;
