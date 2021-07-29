@@ -37,13 +37,13 @@ export default {
           type: 'warning'
         }).then(() => {
           this.API.logout()
-          window.sessionStorage.removeItem("USER")
+          this.SessionStorage.remove("USER")
           this.$router.replace("/login")
           Message.success("成功退出当前账号")
         }).catch(() => {
         })
       }else if (param === 'userinfo') {
-        //
+        this.API.test()
       }
     }
   }

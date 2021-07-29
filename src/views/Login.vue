@@ -70,7 +70,7 @@ export default {
       loading: false,
       checked: true,
       loginForm: {
-        username: 'user',
+        username: 'admin',
         password: 'Ab123.',
       },
       rules: {

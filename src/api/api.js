@@ -10,5 +10,9 @@ export default {
     // 登出
     logout() {
         return get('/logout')
+    },
+
+    getMenu() {
+        return get('/system/config/menu')
     }
 }
