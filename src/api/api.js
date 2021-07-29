@@ -10,5 +10,10 @@ export default {
     // 登出
     logout() {
         return get('/logout')
+    },
+
+    // 获取菜单
+    getMenu() {
+        return get('/system/config/menu')
     }
 }
