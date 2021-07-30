@@ -28,6 +28,14 @@
       </el-aside>
       <section>
         <el-main>
+          <el-breadcrumb separator-class="el-icon-arrow-right" v-show="this.$router.currentRoute.path !== '/'">
+            <el-breadcrumb-item :to="{ path: '/' }">
+              首页
+            </el-breadcrumb-item>
+            <el-breadcrumb-item>
+              {{this.$router.currentRoute.name}}
+            </el-breadcrumb-item>
+          </el-breadcrumb>
           <router-view />
         </el-main>
         <Footer />
