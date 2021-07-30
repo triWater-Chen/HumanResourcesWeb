@@ -1,6 +1,6 @@
 import axios from "axios"
 import {Message, MessageBox} from "element-ui"
-import * as QueryString from "querystring";
+import * as QueryString from "querystring"
 
 // 设置响应时间
 axios.defaults.timeout = 5 * 1000
