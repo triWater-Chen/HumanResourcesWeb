@@ -14,6 +14,6 @@ export default {
 
     // 获取菜单
     getMenu() {
-        return get('/system/config/menu')
+        return get('/system/menu')
     }
 }
