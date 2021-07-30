@@ -27,6 +27,7 @@
                   type="password"
                   auto-complete="off"
                   placeholder="请输入密码"
+                  @keydown.enter.native="submitLogin"
         />
       </el-form-item>
       <el-checkbox v-model="checked" size="normal" class="loginRemember" >记住密码</el-checkbox>
