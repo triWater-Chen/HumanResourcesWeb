@@ -6,13 +6,15 @@
         <el-menu router
                  background-color="#001529"
                  text-color="#fff"
-                 active-text-color="#1890ff">
-          <el-submenu :index="item.path"
-                      v-for="(item, index) in this.$router.options.routes"
+                 active-text-color="#1890ff"
+                 unique-opened
+        >
+          <el-submenu :index="index + ''"
+                      v-for="(item, index) in routes"
                       :key="index"
                       >
             <template slot="title">
-              <i class="el-icon-location" />
+              <i style="color: deepskyblue" :class="item.iconCls" />
               <span>{{item.name}}</span>
             </template>
             <el-menu-item :index="child.path"
@@ -44,5 +46,11 @@ export default {
     Footer,
     Header
   },
+
+  computed: {
+    routes() {
+      return this.$store.state.myRoutes
+    }
+  }
 }
 </script>

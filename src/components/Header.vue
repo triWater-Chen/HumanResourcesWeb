@@ -39,6 +39,7 @@ export default {
           this.API.logout()
               .then((res) => {
                 this.SessionStorage.remove("USER")
+                this.$store.commit("saveRoutes", [])
                 this.$router.replace("/login")
                 if (res.success) {
                   Message.success("成功退出当前账号")
@@ -47,7 +48,7 @@ export default {
         }).catch(() => {
         })
       }else if (param === 'userinfo') {
-        this.API.getMenu()
+        //
       }
     }
   }
