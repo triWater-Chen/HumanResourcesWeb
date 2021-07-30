@@ -45,9 +45,8 @@ export default {
                   Message.success("成功退出当前账号")
                 }
               })
-        }).catch(() => {
         })
-      }else if (param === 'userinfo') {
+      } else if (param === 'userinfo') {
         //
       }
     }
