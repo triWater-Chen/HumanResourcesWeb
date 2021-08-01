@@ -28,7 +28,11 @@
       </el-aside>
       <section>
         <el-main>
-          <el-breadcrumb separator-class="el-icon-arrow-right" v-show="this.$router.currentRoute.path !== '/'">
+          <el-breadcrumb
+              style="margin-left: 10px; margin-top: 10px;"
+              separator-class="el-icon-arrow-right"
+              v-show="this.$router.currentRoute.path !== '/'"
+          >
             <el-breadcrumb-item :to="{ path: '/' }">
               首页
             </el-breadcrumb-item>
@@ -36,7 +40,7 @@
               {{this.$router.currentRoute.name}}
             </el-breadcrumb-item>
           </el-breadcrumb>
-          <router-view />
+          <router-view class="homeRouterView"/>
         </el-main>
         <Footer />
       </section>
@@ -46,8 +50,8 @@
 
 <script>
 
-import Header from "../components/Header";
-import Footer from "../components/Footer";
+import Header from "../components/layout/Header";
+import Footer from "../components/layout/Footer";
 export default {
   name: 'Home',
   components: {
@@ -62,3 +66,10 @@ export default {
   }
 }
 </script>
+
+<style>
+  .homeRouterView {
+    margin-top: 20px;
+    margin-left: 10px;
+  }
+</style>
