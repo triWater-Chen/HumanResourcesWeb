@@ -6,6 +6,9 @@ import router from "../router";
 // 设置响应时间
 axios.defaults.timeout = 5 * 1000
 
+// 设置路径统一前缀
+axios.defaults.baseURL = '/cl'
+
 /**
  * 响应拦截
  */

@@ -7,12 +7,12 @@ module.exports = {
         host: 'localhost',
         port: 8080,
         proxy: {
-            '/': {
+            '/cl': {
                 target: 'http://localhost:7000',
                 ws: false,
                 changeOrigin: true,
                 pathRewrite: {
-                    '^/': ''
+                    '^/cl': '/'
                 }
             },
             '/ws': {
