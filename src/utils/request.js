@@ -1,9 +1,13 @@
 import axios from "axios"
 import {Message, MessageBox} from "element-ui"
-import * as QueryString from "querystring";
+import * as QueryString from "querystring"
+import router from "../router";
 
 // 设置响应时间
 axios.defaults.timeout = 5 * 1000
+
+// 设置路径统一前缀
+axios.defaults.baseURL = '/cl'
 
 /**
  * 响应拦截
@@ -31,8 +35,8 @@ axios.interceptors.response.use(response => {
                 cancelButtonText: '取消',
                 type: 'warning'
             }).then(() => {
-                this.$router.replace('/login').then()
-        })
+                router.replace('/login').then()
+            })
     } else {
         if (error.response.data.message) {
             Message.error({message: error.response.data.message})

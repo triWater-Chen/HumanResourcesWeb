@@ -27,6 +27,7 @@
                   type="password"
                   auto-complete="off"
                   placeholder="请输入密码"
+                  @keydown.enter.native="submitLogin"
         />
       </el-form-item>
       <el-checkbox v-model="checked" size="normal" class="loginRemember" >记住密码</el-checkbox>
@@ -42,6 +43,7 @@
 </template>
 
 <script>
+
 export default {
   name: "Login",
   data() {
@@ -69,8 +71,8 @@ export default {
       loading: false,
       checked: true,
       loginForm: {
-        username: '',
-        password: '',
+        username: 'admin',
+        password: 'Ab123.',
       },
       rules: {
         username: [{validator: checkUser, trigger: 'change'}],
@@ -84,9 +86,11 @@ export default {
       // $refs 是对全部组件的查找，ref="loginForm" 即定义 <el-form> 表单组件的名字
       this.$refs.loginForm.validate((valid) => {
         if (valid) {
-          alert("success")
+          this.API.login(this.loginForm).then(res => {
+            this.SessionStorage.set("USER", res)
+            this.$router.replace('/')
+          })
         } else {
-          alert("error")
           return false
         }
       })
@@ -95,7 +99,7 @@ export default {
 }
 </script>
 
-<style>
+<style scoped>
 .loginContainer {
   border-radius: 15px;
   background-clip: padding-box;
