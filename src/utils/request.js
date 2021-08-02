@@ -32,7 +32,7 @@ axios.interceptors.response.use(response => {
             '系统提示',
             {
                 confirmButtonText: '重新登录',
-                cancelButtonText: '取消',
+                cancelButtonText: '取 消',
                 type: 'warning'
             }).then(() => {
                 router.replace('/login').then()
