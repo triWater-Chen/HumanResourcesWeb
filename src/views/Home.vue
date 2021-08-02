@@ -27,13 +27,13 @@
             </el-menu-item>
           </el-submenu>
           <div class="collapseMenu"
-               @click="myCollapse"
+               @click="isCollapse = false"
                v-show="isCollapse"
           >
             <i class="el-icon-d-arrow-right" />
           </div>
           <div class="collapseMenu"
-               @click="myCollapse"
+               @click="isCollapse = true"
                v-show="!isCollapse"
           >
             <i class="el-icon-d-arrow-left" />
@@ -82,11 +82,6 @@ export default {
   data() {
     return {
       isCollapse: true
-    }
-  },
-  methods: {
-    myCollapse() {
-      this.isCollapse = !this.isCollapse;
     }
   }
 }
