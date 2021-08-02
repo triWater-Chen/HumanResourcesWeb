@@ -15,5 +15,19 @@ export default {
     // 获取菜单
     getMenu() {
         return get('/system/menu')
-    }
+    },
+
+    // ----- 职位管理 -----
+    positionGet() {
+        return get('/system//basic/position/list')
+    },
+    positionAdd(params) {
+        return post('/system//basic/position/add', params)
+    },
+    positionUpdate(params) {
+        return post('/system//basic/position/update', params)
+    },
+    positionRemove(params) {
+        return post('/system//basic/position/remove/' + params)
+    },
 }
