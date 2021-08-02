@@ -13,9 +13,17 @@
       <el-button icon="el-icon-plus"
                  size="small"
                  type="primary"
+                 style="margin-top: 5px"
                  @click="handleAdd"
       >
         添加
+      </el-button>
+      <el-button type="danger"
+                 size="small"
+                 :disabled="multipleSelection.length === 0"
+                 @click="deleteBatch"
+      >
+        批量删除
       </el-button>
     </div>
     <div class="positionTable">
@@ -24,29 +32,44 @@
           border
           size="small"
           stripe
-          style="width: 100%; font-size: 14px"
+          style="width: 100%; font-size: 14px;"
           :header-cell-style="myTableStyle"
+          @selection-change="handleSelectionChange"
       >
         <el-table-column
             type="selection"
-            width="55">
-        </el-table-column>
+            fixed="left"
+            width="55"
+            header-align="center"
+            align="center"
+        />
         <el-table-column
             prop="id"
             label="编号"
-            width="55">
-        </el-table-column>
+            width="150"
+            header-align="center"
+            align="center"
+        />
         <el-table-column
             prop="name"
             label="职位名称"
-            width="180">
-        </el-table-column>
+            width="350"
+            header-align="center"
+            align="center"
+        />
         <el-table-column
             prop="createdate"
-            width="250"
-            label="创建时间">
-        </el-table-column>
-        <el-table-column label="操作" fixed="right">
+            width="300"
+            label="创建时间"
+            header-align="center"
+            align="center"
+        />
+        <el-table-column label="操作"
+                         fixed="right"
+                         header-align="center"
+                         align="center"
+                         min-width="100"
+        >
           <template slot-scope="scope">
             <el-button
                 size="mini"
@@ -62,6 +85,25 @@
         </el-table-column>
       </el-table>
     </div>
+    <el-dialog
+        title="修改职位"
+        :visible.sync="dialogVisible"
+        width="30%"
+        style="text-align: center"
+    >
+      <div>
+        <div>
+          <el-tag>职位名称</el-tag>
+          <el-input class="editDialogInput"
+                    size="small"
+                    v-model="editPost.name" />
+        </div>
+      </div>
+      <span slot="footer" class="dialog-footer">
+    <el-button size="small" @click="dialogVisible = false">取 消</el-button>
+    <el-button size="small" type="primary" @click="handleEdit">确 定</el-button>
+  </span>
+    </el-dialog>
   </div>
 </template>
 
@@ -71,7 +113,17 @@ export default {
   data() {
     return {
       position: { name: ''},
-      positions: []
+      positions: [],
+
+      dialogVisible: false,
+      editPost: {
+        id: '',
+        name: '',
+        enabled: false,
+      },
+
+      multipleSelection: [],
+      ids: [],
     }
   },
 
@@ -108,7 +160,21 @@ export default {
     },
 
     // ----- 编辑职位 -----
-    showEdit() {
+    showEdit(data) {
+      // 将值进行复制（使打开对话框后，改变对话框中值，未提交时表格内数据不变）
+      this.editPost = JSON.parse(JSON.stringify(data))
+      this.dialogVisible = true
+      console.log(this.editPost)
+    },
+    handleEdit() {
+      this.API.positionUpdate(this.editPost).then(data => {
+        if (data.success) {
+          this.$message.success(data.message)
+          this.initPosition()
+          this.editPost.name = ''
+          this.dialogVisible = false
+      }
+      })
     },
 
     // ----- 删除职位 -----
@@ -116,8 +182,8 @@ export default {
       this.$confirm('此操作将永久删除【' + data.name + '】职位, 是否继续?',
           '提示',
           {
-            confirmButtonText: '确定',
-            cancelButtonText: '取消',
+            confirmButtonText: '确 定',
+            cancelButtonText: '取 消',
             type: 'warning'
           }).then(() => {
             this.API.positionRemove(data.id).then(data => {
@@ -127,6 +193,30 @@ export default {
               }
             })
           })
+    },
+
+    // ----- 进行批量删除 -----
+    handleSelectionChange(val) {
+      // 传入选中的值
+      this.multipleSelection = val
+      // 遍历选中的值，将 id 存入一个集合中
+      this.ids = val.map(item => item.id)
+    },
+    deleteBatch() {
+      this.$confirm('此操作将永久删除编号为【' + this.ids + '】的职位, 是否继续?',
+          '提示',
+          {
+            confirmButtonText: '确 定',
+            cancelButtonText: '取 消',
+            type: 'warning'
+          }).then(() => {
+            this.API.positionRemoveBatch(this.ids).then(data => {
+              if (data.success) {
+                this.$message.success(data.message)
+                this.initPosition();
+              }
+            })
+      })
     },
 
     // ----- 表头样式 -----
@@ -144,5 +234,9 @@ export default {
 }
 .positionTable {
   margin-top: 15px;
+}
+.editDialogInput {
+  margin-left: 10px;
+  width: 200px;
 }
 </style>

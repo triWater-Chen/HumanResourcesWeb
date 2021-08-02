@@ -30,4 +30,7 @@ export default {
     positionRemove(params) {
         return post('/system//basic/position/remove/' + params)
     },
+    positionRemoveBatch(params) {
+        return post('/system//basic/position/removeBatch', params)
+    },
 }
