@@ -34,4 +34,18 @@ export default {
     positionRemoveBatch(params) {
         return post('/system//basic/position/removeBatch', params)
     },
+
+    // ----- 职称管理 -----
+    jobLevelGet() {
+        return get('/system/basic/jobLevel/list')
+    },
+    jobLevelAdd(params) {
+        return post('/system//basic/jobLevel/add', params)
+    },
+    jobLevelUpdate(params) {
+        return post('/system//basic/jobLevel/update', params)
+    },
+    jobLevelRemoveBatch(params) {
+        return post('/system//basic/jobLevel/removeBatch', params)
+    },
 }
