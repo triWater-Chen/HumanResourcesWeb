@@ -35,7 +35,7 @@ axios.interceptors.response.use(response => {
                 type: 'warning'
             }).then(() => {
                 router.replace('/login').then()
-            })
+            }).catch(() => {})
     } else {
         if (error.response.data.message) {
             Message.error({message: error.response.data.message})

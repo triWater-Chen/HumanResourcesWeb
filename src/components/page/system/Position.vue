@@ -94,9 +94,9 @@
         </div>
       </div>
       <span slot="footer" class="dialog-footer">
-    <el-button size="small" @click="dialogVisible = false">取 消</el-button>
-    <el-button size="small" type="primary" @click="handleEdit">确 定</el-button>
-  </span>
+        <el-button size="small" @click="dialogVisible = false">取 消</el-button>
+        <el-button size="small" type="primary" @click="handleEdit">确 定</el-button>
+      </span>
     </el-dialog>
   </div>
 </template>
@@ -197,7 +197,7 @@ export default {
             //     this.initPosition();
             //   }
             // })
-          })
+          }).catch(() => {})
     },
 
     // ----- 进行批量删除 -----
@@ -215,14 +215,13 @@ export default {
             cancelButtonText: '取 消',
             type: 'warning'
           }).then(() => {
-        console.log(this.ids)
             this.API.positionRemoveBatch(this.ids).then(data => {
               if (data.success) {
                 this.$message.success(data.message)
                 this.initPosition();
               }
             })
-      })
+      }).catch(() => {})
     },
 
     // ----- 表头样式 -----
