@@ -162,9 +162,8 @@ export default {
     // ----- 编辑职位 -----
     showEdit(data) {
       // 将值进行复制（使打开对话框后，改变对话框中值，未提交时表格内数据不变）
-      this.editPost = JSON.parse(JSON.stringify(data))
+      Object.assign(this.editPost, data)
       this.dialogVisible = true
-      console.log(this.editPost)
     },
     handleEdit() {
       this.API.positionUpdate(this.editPost).then(data => {
