@@ -1,6 +1,5 @@
 import axios from "axios"
 import {Message, MessageBox} from "element-ui"
-import * as QueryString from "querystring"
 import router from "../router";
 
 // 设置响应时间
@@ -68,7 +67,7 @@ export function get(url, params) {
 export function post(url, params) {
     return new Promise(((resolve, reject) => {
         // post 提交的参数需要序列化
-        axios.post(url, QueryString.stringify(params))
+        axios.post(url, params)
             .then(res => {
                 resolve(res.data)
             })

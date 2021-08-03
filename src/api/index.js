@@ -1,17 +1,17 @@
 import {get, post} from "../utils/request";
+import * as QueryString from "querystring";
 
 export default {
 
-    // 登录
+    // ----- 初始化 -----
+    // 登录（因为后端需要 JSON 格式）
     login(params) {
-        return post('/doLogin', params)
+        return post('/doLogin', QueryString.stringify(params))
     },
-
     // 登出
     logout() {
         return get('/logout')
     },
-
     // 获取菜单
     getMenu() {
         return get('/system/menu')
