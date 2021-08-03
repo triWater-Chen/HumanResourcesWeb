@@ -28,6 +28,7 @@ export default {
         return post('/system//basic/position/update', params)
     },
     positionRemove(params) {
+        // 删除单个，未使用
         return post('/system//basic/position/remove/' + params)
     },
     positionRemoveBatch(params) {

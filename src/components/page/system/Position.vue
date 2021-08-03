@@ -1,13 +1,12 @@
 <template>
   <div>
     <div>
-      <el-input
-          size="small"
-          class="addPositionButton"
-          placeholder="添加职位..."
-          prefix-icon="el-icon-plus"
-          @keydown.enter.native="handleAdd"
-          v-model="position.name"
+      <el-input size="small"
+                class="addPositionButton"
+                placeholder="添加职位..."
+                prefix-icon="el-icon-plus"
+                @keydown.enter.native="handleAdd"
+                v-model="addPosition.name"
       >
       </el-input>
       <el-button icon="el-icon-plus"
@@ -27,69 +26,64 @@
       </el-button>
     </div>
     <div class="positionTable">
-      <el-table
-          :data="positions"
-          border
-          size="small"
-          stripe
-          style="width: 100%; font-size: 14px;"
-          :header-cell-style="myTableStyle"
-          @selection-change="handleSelectionChange"
+      <el-table :data="positions"
+                border
+                stripe
+                :header-cell-style="myTableStyle"
+                @selection-change="handleSelectionChange"
       >
-        <el-table-column
-            type="selection"
-            fixed="left"
-            width="55"
-            header-align="center"
-            align="center"
-        />
-        <el-table-column
-            prop="id"
-            label="编号"
-            width="150"
-            header-align="center"
-            align="center"
-        />
-        <el-table-column
-            prop="name"
-            label="职位名称"
-            width="350"
-            header-align="center"
-            align="center"
-        />
-        <el-table-column
-            prop="createdate"
-            width="300"
-            label="创建时间"
-            header-align="center"
-            align="center"
-        />
-        <el-table-column label="操作"
-                         fixed="right"
+        <el-table-column type="selection"
+                         fixed="left"
+                         width="55"
                          header-align="center"
                          align="center"
-                         min-width="100"
+        />
+        <el-table-column prop="id"
+                         label="编号"
+                         width="150"
+                         header-align="center"
+                         align="center"
+        />
+        <el-table-column prop="name"
+                         label="职位名称"
+                         min-width="200"
+                         header-align="center"
+                         align="center"
+        />
+        <el-table-column prop="createdate"
+                         min-width="200"
+                         label="创建时间"
+                         header-align="center"
+                         align="center"
+        />
+        <el-table-column label="操作"
+                         header-align="center"
+                         align="center"
+                         min-width="200"
         >
           <template slot-scope="scope">
-            <el-button
-                size="mini"
-                type="text"
-                @click="showEdit(scope.row)">编辑
+            <el-button size="small"
+                       type="text"
+                       icon="el-icon-edit"
+                       @click="showEdit(scope.row)"
+            >
+              编辑
             </el-button>
-            <el-button
-                size="mini"
-                type="text"
-                @click="handleDelete(scope.row)">删除
+            <el-button size="small"
+                       type="text"
+                       icon="el-icon-delete"
+                       @click="handleDelete(scope.row)"
+            >
+              删除
             </el-button>
           </template>
         </el-table-column>
       </el-table>
     </div>
-    <el-dialog
-        title="修改职位"
-        :visible.sync="dialogVisible"
-        width="30%"
-        style="text-align: center"
+    <el-dialog title="修改职位"
+               :visible.sync="dialogVisible"
+               width="420px"
+               style="text-align: center"
     >
       <div>
         <div>
@@ -112,7 +106,8 @@ export default {
   name: "Position",
   data() {
     return {
-      position: { name: ''},
+      // 用于添加职位
+      addPosition: { name: ''},
       positions: [],
 
       dialogVisible: false,
@@ -145,13 +140,13 @@ export default {
 
     // ----- 添加职位 -----
     handleAdd() {
-      if (this.position.name) {
-        this.API.positionAdd(this.position)
+      if (this.addPosition.name) {
+        this.API.positionAdd(this.addPosition)
             .then(data => {
               if (data.success) {
                 this.$message.success(data.message)
                 this.initPosition()
-                this.position.name = ''
+                this.addPosition.name = ''
               }
             })
       } else {
@@ -178,19 +173,30 @@ export default {
 
     // ----- 删除职位 -----
     handleDelete(data) {
-      this.$confirm('此操作将永久删除【' + data.name + '】职位, 是否继续?',
+      this.$confirm('此操作将永久删除职位【' + data.name + '】, 是否继续?',
           '提示',
           {
             confirmButtonText: '确 定',
             cancelButtonText: '取 消',
             type: 'warning'
           }).then(() => {
-            this.API.positionRemove(data.id).then(data => {
+            // ----- 统一使用批量删除的方法 -----
+            const deleteId = []
+            deleteId.push(data.id);
+            this.API.positionRemoveBatch(deleteId).then(data => {
               if (data.success) {
-                this.$message.success(data.message)
-                this.initPosition();
-              }
+                    this.$message.success(data.message)
+                    this.initPosition();
+                  }
             })
+
+            // ----- 使用单个删除的方法 -----
+            // this.API.positionRemove(data.id).then(data => {
+            //   if (data.success) {
+            //     this.$message.success(data.message)
+            //     this.initPosition();
+            //   }
+            // })
           })
     },
 
@@ -209,6 +215,7 @@ export default {
             cancelButtonText: '取 消',
             type: 'warning'
           }).then(() => {
+        console.log(this.ids)
             this.API.positionRemoveBatch(this.ids).then(data => {
               if (data.success) {
                 this.$message.success(data.message)
@@ -232,7 +239,7 @@ export default {
   margin-right: 10px;
 }
 .positionTable {
-  margin-top: 15px;
+  margin-top: 20px;
 }
 .editDialogInput {
   margin-left: 10px;
