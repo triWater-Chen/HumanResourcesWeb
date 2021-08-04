@@ -1,7 +1,7 @@
 <template>
   <div>
     <el-form :inline="true">
-      <el-form-item prop="levelName">
+      <el-form-item>
         <el-input size="small"
                   v-model="addLevel.name"
                   style="width: 200px;"
@@ -9,7 +9,7 @@
                   placeholder="添加职称..."
         />
       </el-form-item>
-      <el-form-item prop="levelTitle">
+      <el-form-item>
         <el-select v-model="addLevel.titleLevel"
                    placeholder="职称等级"
                    clearable
@@ -284,9 +284,27 @@ export default {
             })
           }).catch(() => {})
     },
-    handleSelectionChange() {
+    handleSelectionChange(val) {
+      // 传入选中的值
+      this.multipleSelection = val
+      // 遍历选中的值，将 id 存入一个集合中
+      this.ids = val.map(item => item.id)
     },
     deleteBatch() {
+      this.$confirm('此操作将永久删除编号为【' + this.ids + '】的职位, 是否继续?',
+          '提示',
+          {
+            confirmButtonText: '确 定',
+            cancelButtonText: '取 消',
+            type: 'warning'
+          }).then(() => {
+            this.API.jobLevelRemoveBatch(this.ids).then(data => {
+              if (data.success) {
+                this.$message.success(data.message)
+                this.initJobLevel()
+              }
+            })
+      }).catch(() => {})
     },
 
     // ----- 表头样式 -----
