@@ -40,7 +40,7 @@
           </div>
         </el-menu>
       </el-aside>
-      <el-container direction="vertical">
+      <el-container direction="vertical" style="height: calc(100vh - 60px)">
         <el-main>
           <el-breadcrumb
               style="margin-left: 10px; margin-top: 10px;"
@@ -56,7 +56,7 @@
           </el-breadcrumb>
           <router-view class="homeRouterView" />
         </el-main>
-        <Footer />
+        <Footer v-show="this.$router.currentRoute.path !== '/system/basic'"/>
       </el-container>
     </el-container>
   </el-container>

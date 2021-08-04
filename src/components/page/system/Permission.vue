@@ -2,39 +2,12 @@
   <div class="permissionStyle">
     <el-form :inline="true">
       <el-form-item>
-        <el-input size="small"
-                  v-model="queryRole.name"
-                  style="width: 250px;"
-                  placeholder="请输入角色英文名"
-        >
-          <template slot="prepend">ROLE_</template>
-        </el-input>
-      </el-form-item>
-      <el-form-item>
-        <el-input size="small"
-                  v-model="queryRole.namezh"
-                  style="width: 200px;"
-                  placeholder="请输入角色中文名"
-        />
-      </el-form-item>
-      <el-form-item>
-        <el-select v-model="queryRole.enabled"
-                   placeholder="角色状态"
-                   clearable
+        <el-button type="primary"
+                   icon="el-icon-plus"
                    size="small"
-                   style="width: 150px;"
+                   @click="handleAdd"
         >
-          <el-option label="可用" value="true"></el-option>
-          <el-option label="禁用" value="false"></el-option>
-        </el-select>
-      </el-form-item>
-      <el-form-item>
-        <el-button icon="el-icon-search"
-                   type="primary"
-                   size="small"
-                   @click="handleQuery"
-        >
-          搜索
+          新增
         </el-button>
         <el-button type="danger"
                    size="small"
@@ -50,6 +23,44 @@
                      @click="refreshRole"
           />
         </el-tooltip>
+      </el-form-item>
+      <el-form-item style="float: right;">
+        <el-button icon="el-icon-search"
+                   type="primary"
+                   size="small"
+                   @click="handleQuery"
+        >
+          搜索
+        </el-button>
+      </el-form-item>
+      <el-form-item style="float: right;">
+        <el-select v-model="queryRole.enabled"
+                   placeholder="角色状态"
+                   clearable
+                   size="small"
+                   style="width: 150px;"
+        >
+          <el-option label="可用" value="true"></el-option>
+          <el-option label="禁用" value="false"></el-option>
+        </el-select>
+      </el-form-item>
+      <el-form-item style="float: right;">
+        <el-input size="small"
+                  v-model="queryRole.namezh"
+                  style="width: 200px;"
+                  placeholder="请输入角色中文名"
+                  @keydown.enter.native="handleQuery"
+        />
+      </el-form-item>
+      <el-form-item style="float: right;">
+        <el-input size="small"
+                  v-model="queryRole.name"
+                  style="width: 250px;"
+                  placeholder="请输入角色英文名"
+                  @keydown.enter.native="handleQuery"
+        >
+          <template slot="prepend">ROLE_</template>
+        </el-input>
       </el-form-item>
     </el-form>
 
@@ -128,7 +139,7 @@
     <div class="paginationStyle">
       <el-pagination background
                      layout="total, sizes, prev, pager, next, jumper"
-                     :page-sizes="[2, 6, 10]"
+                     :page-sizes="[6, 10, 100]"
                      :page-size="6"
                      :total="total"
                      :current-page="queryRole.current"
@@ -240,6 +251,7 @@ export default {
     // ----- 处理分页 -----
     handleSizeChange(currentSize) {
       this.queryRole.size = currentSize
+      this.queryRole.current = 1
       this.initRole()
     },
     handleCurrentChange(currentPage) {
