@@ -27,8 +27,16 @@
         >
           批量删除
         </el-button>
+        <el-tooltip effect="dark" content="刷新" placement="top">
+          <el-button icon="el-icon-refresh"
+                     circle
+                     size="mini"
+                     @click="refreshJobLevel"
+          />
+        </el-tooltip>
       </el-form-item>
     </el-form>
+
     <div>
       <el-table :data="positions"
                 border
@@ -94,6 +102,7 @@
         </el-table-column>
       </el-table>
     </div>
+
     <el-dialog title="修改职位"
                :visible.sync="dialogVisible"
                width="420px"
@@ -157,6 +166,16 @@ export default {
               this.positions = data.data.list
             }
           })
+    },
+
+    // ----- 刷新数据 -----
+    refreshJobLevel() {
+      this.API.positionGet().then(res => {
+        if (res.success) {
+          this.positions = res.data.list
+          this.$message.success("刷新成功")
+        }
+      })
     },
 
     // ----- 添加职位 -----
