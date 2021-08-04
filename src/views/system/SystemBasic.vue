@@ -12,7 +12,7 @@
     <el-tab-pane label="奖惩规则" name="rewardPenalty">
       <RewardPenalty />
     </el-tab-pane>
-    <el-tab-pane label="权限组" name="permission">
+    <el-tab-pane label="权限管理" name="permission">
       <Permission />
     </el-tab-pane>
   </el-tabs>

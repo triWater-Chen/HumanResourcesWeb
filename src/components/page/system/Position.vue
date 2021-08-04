@@ -31,7 +31,7 @@
           <el-button icon="el-icon-refresh"
                      circle
                      size="mini"
-                     @click="refreshJobLevel"
+                     @click="refreshPosition"
           />
         </el-tooltip>
       </el-form-item>
@@ -169,7 +169,7 @@ export default {
     },
 
     // ----- 刷新数据 -----
-    refreshJobLevel() {
+    refreshPosition() {
       this.API.positionGet().then(res => {
         if (res.success) {
           this.positions = res.data.list
