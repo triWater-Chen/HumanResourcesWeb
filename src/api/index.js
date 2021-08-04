@@ -48,4 +48,18 @@ export default {
     jobLevelRemoveBatch(params) {
         return post('/system//basic/jobLevel/removeBatch', params)
     },
+
+    // ----- 权限管理 -----
+    roleGet(params) {
+        return get('/system/basic/role/list', params)
+    },
+    roleAdd(params) {
+        return post('/system//basic/role/add', params)
+    },
+    roleUpdate(params) {
+        return post('/system//basic/role/update', params)
+    },
+    roleRemoveBatch(params) {
+        return post('/system//basic/role/removeBatch', params)
+    },
 }
