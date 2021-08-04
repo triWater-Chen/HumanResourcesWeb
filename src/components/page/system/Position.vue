@@ -1,31 +1,35 @@
 <template>
   <div>
+    <el-form :inline="true" @submit.native.prevent>
+      <!-- 当 form 内只有一个输入框时,按回车会自动提交，使用 @submit 来阻止页面刷新-->
+      <el-form-item>
+        <el-input size="small"
+                  style="width: 200px;"
+                  placeholder="添加职位..."
+                  prefix-icon="el-icon-plus"
+                  v-model="addPosition.name"
+                  @keydown.enter.native="handleAdd"
+        />
+      </el-form-item>
+      <el-form-item>
+        <el-button icon="el-icon-plus"
+                   size="small"
+                   type="primary"
+                   style="margin-top: 5px"
+                   @click="handleAdd"
+        >
+          添加
+        </el-button>
+        <el-button type="danger"
+                   size="small"
+                   :disabled="multipleSelection.length === 0"
+                   @click="deleteBatch"
+        >
+          批量删除
+        </el-button>
+      </el-form-item>
+    </el-form>
     <div>
-      <el-input size="small"
-                class="addPositionButton"
-                placeholder="添加职位..."
-                prefix-icon="el-icon-plus"
-                @keydown.enter.native="handleAdd"
-                v-model="addPosition.name"
-      >
-      </el-input>
-      <el-button icon="el-icon-plus"
-                 size="small"
-                 type="primary"
-                 style="margin-top: 5px"
-                 @click="handleAdd"
-      >
-        添加
-      </el-button>
-      <el-button type="danger"
-                 size="small"
-                 :disabled="multipleSelection.length === 0"
-                 @click="deleteBatch"
-      >
-        批量删除
-      </el-button>
-    </div>
-    <div class="positionTable">
       <el-table :data="positions"
                 border
                 stripe
@@ -56,6 +60,16 @@
                          header-align="center"
                          align="center"
         />
+        <el-table-column label="是否启用"
+                         header-align="center"
+                         align="center"
+        >
+          <template slot-scope="scope">
+            <el-switch v-model="scope.row.enabled"
+                       @change="handleStatus(scope.row)"
+            />
+          </template>
+        </el-table-column>
         <el-table-column label="操作"
                          header-align="center"
                          align="center"
@@ -85,14 +99,21 @@
                width="420px"
                style="text-align: center"
     >
-      <div>
-        <div>
+      <el-form>
+        <el-form-item>
           <el-tag>职位名称</el-tag>
-          <el-input class="editDialogInput"
-                    size="small"
-                    v-model="editPost.name" />
-        </div>
-      </div>
+          <el-input v-model="editPost.name"
+                    size="medium"
+                    class="editDialogInput"
+          />
+        </el-form-item>
+        <el-form-item>
+          <el-switch v-model="editPost.enabled"
+                     active-text="启用"
+                     inactive-text="禁用"
+          />
+        </el-form-item>
+      </el-form>
       <span slot="footer" class="dialog-footer">
         <el-button size="small" @click="dialogVisible = false">取 消</el-button>
         <el-button size="small" type="primary" @click="handleEdit">确 定</el-button>
@@ -152,6 +173,26 @@ export default {
       } else {
         this.$message.error("职位名称不可为空")
       }
+    },
+
+    // ----- 修改状态 -----
+    handleStatus(data) {
+      const text = data.enabled === true ? "启用" : "停用"
+      this.$confirm('确定要"' + text + '"职位【' + data.name + '】吗?',
+          '提示',
+          {
+            confirmButtonText: '确 定',
+            cancelButtonText: '取 消',
+            type: 'warning'
+          }).then(() => {
+        this.API.positionUpdate(data).then(res => {
+          if (res.success) {
+            this.$message.success(text + "成功")
+          }
+        })
+      }).catch(() => {
+        data.enabled = data.enabled !== true
+      })
     },
 
     // ----- 编辑职位 -----
@@ -233,13 +274,6 @@ export default {
 </script>
 
 <style scoped>
-.addPositionButton {
-  width: 200px;
-  margin-right: 10px;
-}
-.positionTable {
-  margin-top: 20px;
-}
 .editDialogInput {
   margin-left: 10px;
   width: 200px;
