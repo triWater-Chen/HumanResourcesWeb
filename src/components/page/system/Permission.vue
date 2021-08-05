@@ -149,44 +149,66 @@
       />
     </div>
 
-<!--    <el-dialog title="修改职称"-->
-<!--               :visible.sync="dialogVisible"-->
-<!--               width="420px"-->
-<!--               style="text-align: center"-->
-<!--    >-->
-<!--      <el-form>-->
-<!--        <el-form-item>-->
-<!--          <el-tag>职位名称</el-tag>-->
-<!--          <el-input v-model="editPost.name"-->
-<!--                    size="medium"-->
-<!--                    style="width: 200px; margin-left: 10px;"-->
-<!--          />-->
-<!--        </el-form-item>-->
-<!--        <el-form-item>-->
-<!--          <el-tag>职称级别</el-tag>-->
-<!--          <el-select v-model="editPost.titleLevel"-->
-<!--                     size="medium"-->
-<!--                     style="width: 200px; margin-left: 10px;"-->
-<!--          >-->
-<!--            <el-option v-for="item in titleLevels"-->
-<!--                       :key="item"-->
-<!--                       :label="item"-->
-<!--                       :value="item"-->
-<!--            />-->
-<!--          </el-select>-->
-<!--        </el-form-item>-->
-<!--        <el-form-item>-->
-<!--          <el-switch v-model="editPost.enabled"-->
-<!--                     active-text="启用"-->
-<!--                     inactive-text="禁用"-->
-<!--          />-->
-<!--        </el-form-item>-->
-<!--      </el-form>-->
-<!--      <span slot="footer" class="dialog-footer">-->
-<!--        <el-button size="small" @click="dialogVisible = false">取 消</el-button>-->
-<!--        <el-button size="small" type="primary" @click="handleEdit">确 定</el-button>-->
-<!--      </span>-->
-<!--    </el-dialog>-->
+    <el-dialog :title="title"
+               :visible.sync="dialogVisible"
+               width="500px"
+               style="text-align: center"
+    >
+      <el-form ref="dialogForm">
+        <el-form-item>
+          <el-tag>角色英文名称</el-tag>
+          <el-input size="medium"
+                    v-model="editForm.name"
+                    style="width: 280px; margin-left: 10px;"
+          >
+            <template slot="prepend">ROLE_</template>
+          </el-input>
+        </el-form-item>
+        <el-form-item>
+          <el-tag>角色中文名称</el-tag>
+          <el-input v-model="editForm.namezh"
+                    size="medium"
+                    style="width: 280px; margin-left: 10px;"
+          />
+        </el-form-item>
+        <el-form-item style="display: flex; justify-content: center;">
+          <el-card class="box-card"
+                   shadow="hover"
+                   style="width: 380px"
+          >
+            <div slot="header" style="height: 20px;">
+              <span style="font-size: 16px;color: #303133;">
+                菜单权限管理
+              </span>
+            </div>
+              <el-checkbox v-model="menuExpand" @change="handleMenuExpand">展开/折叠</el-checkbox>
+              <el-checkbox v-model="menuAllChecked" @change="handleMenuAllChecked">全选/全不选</el-checkbox>
+              <el-checkbox v-model="checkStrictly" @change="handleCheckStrictly">父子联动</el-checkbox>
+            <div>
+              <el-tree class="tree-border"
+                       ref="tree"
+                       show-checkbox
+                       empty-text="加载中，请稍后"
+                       node-key="id"
+                       :data="menuTree"
+                       :props="defaultProps"
+                       :check-strictly="!checkStrictly"
+              />
+            </div>
+          </el-card>
+        </el-form-item>
+        <el-form-item>
+          <el-switch v-model="editForm.enabled"
+                     active-text="启用"
+                     inactive-text="禁用"
+          />
+        </el-form-item>
+      </el-form>
+      <span slot="footer" class="dialog-footer">
+        <el-button size="small" @click="dialogVisible = false">取 消</el-button>
+        <el-button size="small" type="primary" @click="handleForm">确 定</el-button>
+      </span>
+    </el-dialog>
   </div>
 </template>
 
@@ -207,17 +229,32 @@ export default {
         enabled: '',
       },
 
-      // 用于添加角色
-      addRole: {name: ''},
+      title: '',
       roles: [],
 
+      // 树形数据
+      menuTree: [],
+      defaultProps: {
+        children: 'children',
+        label: 'name'
+      },
+      menuExpand: false,
+      menuAllChecked: false,
+      checkStrictly: true,
+
       dialogVisible: false,
-      editPost: {},
+      // 用于添加、编辑角色
+      editForm: {
+        name: '',
+        namezh: '',
+        enabled: '',
+      },
     }
   },
 
   mounted() {
     this.initRole()
+    this.getMenuTree()
   },
 
   methods: {
@@ -232,6 +269,48 @@ export default {
           this.total = res.data.list.total
         }
       })
+    },
+
+    // ----- 树形组件 -----
+    // ----- 查询所有树形菜单 -----
+    getMenuTree() {
+      this.API.menuTree().then(res => {
+        if (res.success) {
+          this.menuTree = res.data.menus
+        }
+      })
+    },
+    // ----- 根据角色 id 查询其所属的菜单 -----
+    getSelectedMenus(id) {
+      this.API.menuIdByRole(id).then(res => {
+        if (res.success) {
+          // 设置默认勾选的菜单
+          this.$refs.tree.setCheckedKeys(res.data.list)
+        }
+      })
+    },
+    // ----- 处理树形中，展开 -----
+    handleMenuExpand(val) {
+      for (let i = 0; i < this.menuTree.length; i++) {
+        this.$refs.tree.store.nodesMap[this.menuTree[i].id].expanded = val
+      }
+    },
+    // ----- 处理树形中，全选 -----
+    handleMenuAllChecked(val) {
+      this.$refs.tree.setCheckedNodes(val ? this.menuTree : [])
+    },
+    // ----- 处理树形中，父子关联 -----
+    handleCheckStrictly(val) {
+      this.checkStrictly = !!val
+    },
+    // ----- 重置树形数据 -----
+    resetTree() {
+      this.menuExpand = false
+      this.menuAllChecked = false
+      this.checkStrictly = true
+      if (this.$refs.tree !== undefined) {
+        this.$refs.tree.setCheckedKeys([])
+      }
     },
 
     // ----- 刷新数据 -----
@@ -271,22 +350,54 @@ export default {
           this.$message.success(res.message)
         }
       })
+      // 重置查询条件
       this.queryRole.name = ''
       this.queryRole.namezh = ''
       this.queryRole.enabled = ''
     },
 
-
-    // ----- 添加角色 -----
-    handleAdd() {
-    },
-
-    // ----- 修改状态 -----
+    // ----- 修改角色状态 -----
     handleStatus() {
     },
 
-    // ----- 编辑角色 -----
-    showEdit() {
+
+    // ----- 初始化添加按钮 -----
+    handleAdd() {
+      this.resetTree()
+      this.editForm = {}
+      this.title = "添加角色"
+      this.dialogVisible = true
+      this.$nextTick(() => {
+        this.handleMenuExpand(false)
+      })
+    },
+    // ----- 初始化编辑按钮 -----
+    showEdit(data) {
+      this.resetTree()
+      Object.assign(this.editForm, data)
+      this.editForm.name = this.editForm.name.substr(5)
+      this.title = "修改角色"
+
+      // 获取所编辑对象所属的菜单
+      this.getSelectedMenus(this.editForm.id)
+      this.dialogVisible = true
+
+      this.$nextTick(() => {
+        this.handleMenuExpand(false)
+      })
+    },
+    // ----- 进行添加、修改角色 -----
+    handleForm() {
+
+      if (this.editForm.name === undefined) {
+        // 进行添加
+
+      } else {
+        // 进行修改
+        const selectKeys = this.$refs.tree.getCheckedKeys(true)
+        console.log(selectKeys)
+      }
+      this.dialogVisible = false
     },
 
     // ----- 删除角色 -----
