@@ -245,9 +245,11 @@ export default {
       dialogVisible: false,
       // 用于添加、编辑角色
       editForm: {
+        id: '',
         name: '',
         namezh: '',
-        enabled: '',
+        enabled: true,
+        menuIds: [],
       },
     }
   },
@@ -313,6 +315,7 @@ export default {
       }
     },
 
+
     // ----- 刷新数据 -----
     refreshRole() {
       this.queryRole.current = 1
@@ -364,7 +367,7 @@ export default {
     // ----- 初始化添加按钮 -----
     handleAdd() {
       this.resetTree()
-      this.editForm = {}
+      this.editForm = {enabled: true}
       this.title = "添加角色"
       this.dialogVisible = true
       this.$nextTick(() => {
@@ -388,17 +391,28 @@ export default {
     },
     // ----- 进行添加、修改角色 -----
     handleForm() {
+      // 设置该角色所属的菜单
+      this.editForm.menuIds = this.$refs.tree.getCheckedKeys(true)
 
-      if (this.editForm.name === undefined) {
+      if (this.editForm.id === undefined) {
         // 进行添加
 
       } else {
         // 进行修改
-        const selectKeys = this.$refs.tree.getCheckedKeys(true)
-        console.log(selectKeys)
+        this.API.roleUpdate(this.editForm).then(res => {
+          if (res.success) {
+            this.$message.success(res.message)
+            this.initRole()
+          }
+        })
       }
+      console.log(this.editForm.menuIds)
+
+      // 数据清零
+      this.editForm.menuIds = []
       this.dialogVisible = false
     },
+
 
     // ----- 删除角色 -----
     handleDelete() {

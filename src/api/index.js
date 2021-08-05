@@ -53,21 +53,18 @@ export default {
     roleGet(params) {
         return get('/system/basic/role/list', params)
     },
-    roleAdd(params) {
-        return post('/system//basic/role/add', params)
-    },
     roleUpdate(params) {
-        return post('/system//basic/role/update', params)
+        return post('/system/basic/role/update', params)
     },
     roleRemoveBatch(params) {
-        return post('/system//basic/role/removeBatch', params)
+        return post('/system/basic/role/removeBatch', params)
     },
     // ----- 查询所有菜单 -----
     menuTree() {
-        return get('/system//basic/role/menuTree')
+        return get('/system/basic/role/menuTree')
     },
     // ----- 查询所有菜单 -----
     menuIdByRole(params) {
-        return get('/system//basic/role/menuByRole/' + params)
+        return get('/system/basic/role/menuByRole/' + params)
     },
 }
