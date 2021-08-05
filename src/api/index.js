@@ -62,4 +62,12 @@ export default {
     roleRemoveBatch(params) {
         return post('/system//basic/role/removeBatch', params)
     },
+    // ----- 查询所有菜单 -----
+    menuTree() {
+        return get('/system//basic/role/menuTree')
+    },
+    // ----- 查询所有菜单 -----
+    menuIdByRole(params) {
+        return get('/system//basic/role/menuByRole/' + params)
+    },
 }
