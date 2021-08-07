@@ -438,24 +438,39 @@ export default {
       // 设置该角色所属的菜单
       this.editForm.menuIds = this.$refs.tree.getCheckedKeys(true)
 
-      if (this.editForm.id === undefined) {
-        // 进行添加
+      if (this.editForm.name && this.editForm.namezh) {
+        const check = /^\w{1,15}$/
+        if (check.test(this.editForm.name)) {
 
-        this.API.roleAddOrUpdate(this.editForm).then(res => {
-          if (res.success) {
-            this.$message.success("添加成功")
-            this.initRole()
+          if (this.editForm.id === undefined) {
+            // 进行添加
+
+            this.API.roleAddOrUpdate(this.editForm).then(res => {
+              if (res.success) {
+                this.$message.success("添加成功")
+                this.initRole()
+              }
+            })
+          } else {
+            // 进行修改
+
+            this.API.roleAddOrUpdate(this.editForm).then(res => {
+              if (res.success) {
+                this.$message.success(res.message)
+                this.initRole()
+              }
+            })
           }
-        })
+
+        } else {
+          this.$message.success("角色英文名称格式不正确")
+        }
       } else {
-        // 进行修改
-
-        this.API.roleAddOrUpdate(this.editForm).then(res => {
-          if (res.success) {
-            this.$message.success(res.message)
-            this.initRole()
-          }
-        })
+        if (!this.editForm.name) {
+          this.$message.success("角色英文名称不能为空")
+        } else {
+          this.$message.success("角色中文名称不能为空")
+        }
       }
 
       // 数据清零
