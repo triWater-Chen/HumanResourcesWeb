@@ -272,6 +272,13 @@ export default {
     }
   },
 
+  watch: {
+    // 监控 menuExpand 是否变化，变化则执行相关操作
+    menuExpand(val) {
+      this.handleMenuExpand(val)
+    }
+  },
+
   mounted() {
     this.initRole()
     this.getMenuTree()
@@ -414,9 +421,6 @@ export default {
       this.editForm = {enabled: true}
       this.title = "添加角色"
       this.dialogVisible = true
-      this.$nextTick(() => {
-        this.handleMenuExpand(false)
-      })
     },
     // ----- 初始化编辑按钮 -----
     showEdit(data) {
@@ -428,10 +432,6 @@ export default {
       // 获取所编辑对象所属的菜单
       this.getSelectedMenus(this.editForm.id)
       this.dialogVisible = true
-
-      this.$nextTick(() => {
-        this.handleMenuExpand(false)
-      })
     },
     // ----- 进行添加、修改角色 -----
     handleForm() {
