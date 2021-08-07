@@ -70,4 +70,18 @@ export default {
     menuIdByRole(params) {
         return get('/system/basic/role/menuByRole/' + params)
     },
+
+    // ----- 部门管理 -----
+    departmentGet() {
+        return get('/system/basic/department/list')
+    },
+    departmentAdd(params) {
+        return post('/system//basic/department/add', params)
+    },
+    departmentUpdate(params) {
+        return post('/system//basic/department/update', params)
+    },
+    departmentRemoveBatch(params) {
+        return post('/system//basic/department/removeBatch', params)
+    },
 }
