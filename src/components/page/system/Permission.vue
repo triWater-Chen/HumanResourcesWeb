@@ -1,53 +1,25 @@
 <template>
   <div class="permissionStyle">
-    <el-form :inline="true"
-             :model="queryRole"
-             ref="queryRef"
-    >
+    <el-form :inline="true">
       <el-form-item>
-        <el-button type="primary"
-                   icon="el-icon-plus"
-                   size="small"
-                   @click="handleAdd"
+        <el-input size="small"
+                  v-model="queryRole.name"
+                  style="width: 230px;"
+                  placeholder="请输入角色英文名"
+                  @keydown.enter.native="handleQuery"
         >
-          新增
-        </el-button>
-        <el-button type="danger"
-                   size="small"
-                   :disabled="multipleSelection.length === 0"
-                   @click="deleteBatch"
-        >
-          批量删除
-        </el-button>
-        <el-tooltip effect="dark" content="刷新" placement="top">
-          <el-button icon="el-icon-refresh"
-                     circle
-                     size="mini"
-                     @click="refreshRole"
-          />
-        </el-tooltip>
+          <template slot="prepend">ROLE_</template>
+        </el-input>
       </el-form-item>
-      <el-form-item style="float: right;">
-        <el-button icon="el-icon-search"
-                   type="primary"
-                   size="small"
-                   @click="handleQuery"
-        >
-          搜索
-        </el-button>
-      </el-form-item>
-      <el-form-item style="float: right;">
-        <el-date-picker  v-model="dateRange"
-                         size="small"
-                         style="width: 220px"
-                         value-format="yyyy-MM-dd"
-                         type="daterange"
-                         range-separator="-"
-                         start-placeholder="开始日期"
-                         end-placeholder="结束日期"
+      <el-form-item>
+        <el-input size="small"
+                  v-model="queryRole.namezh"
+                  style="width: 160px;"
+                  placeholder="请输入角色中文名"
+                  @keydown.enter.native="handleQuery"
         />
       </el-form-item>
-      <el-form-item prop="enabled" style="float: right;">
+      <el-form-item>
         <el-select v-model="queryRole.enabled"
                    placeholder="角色状态"
                    clearable
@@ -58,27 +30,59 @@
           <el-option label="禁用" value="false"></el-option>
         </el-select>
       </el-form-item>
-      <el-form-item prop="namezh" style="float: right;">
-        <el-input size="small"
-                  v-model="queryRole.namezh"
-                  style="width: 150px;"
-                  placeholder="请输入角色中文名"
-                  @keydown.enter.native="handleQuery"
+      <el-form-item>
+        <el-date-picker  v-model="dateRange"
+                         size="small"
+                         style="width: 220px"
+                         value-format="yyyy-MM-dd"
+                         type="daterange"
+                         range-separator="-"
+                         start-placeholder="开始日期"
+                         end-placeholder="结束日期"
         />
       </el-form-item>
-      <el-form-item prop="name" style="float: right;">
-        <el-input size="small"
-                  v-model="queryRole.name"
-                  style="width: 220px;"
-                  placeholder="请输入角色英文名"
-                  @keydown.enter.native="handleQuery"
+      <el-form-item>
+        <el-button icon="el-icon-search"
+                   type="primary"
+                   size="small"
+                   @click="handleQuery"
         >
-          <template slot="prepend">ROLE_</template>
-        </el-input>
+          搜索
+        </el-button>
       </el-form-item>
     </el-form>
 
     <div>
+      <el-row :gutter="10" style="margin-bottom: 10px;">
+        <el-col :span="1.5">
+            <el-button type="primary"
+                       icon="el-icon-plus"
+                       size="mini"
+                       @click="handleAdd"
+            >
+              新增
+            </el-button>
+        </el-col>
+        <el-col :span="1.5">
+          <el-button type="danger"
+                     size="mini"
+                     :disabled="multipleSelection.length === 0"
+                     @click="deleteBatch"
+          >
+            批量删除
+          </el-button>
+        </el-col>
+        <el-col :span="1.5">
+          <el-tooltip effect="dark" content="刷新" placement="top">
+            <el-button icon="el-icon-refresh"
+                       circle
+                       size="mini"
+                       @click="refreshRole"
+            />
+          </el-tooltip>
+        </el-col>
+      </el-row>
+
       <el-table :data="roles"
                 border
                 stripe
@@ -329,10 +333,18 @@ export default {
       }
     },
 
+    // ----- 重置查询表单 -----
+    resetForm() {
+      this.queryRole = {
+        current: 1,
+        size: 6,
+      }
+      this.dateRange = []
+    },
 
     // ----- 刷新数据 -----
     refreshRole() {
-      this.queryRole.current = 1
+      this.resetForm()
       this.API.roleGet({
         params: this.queryRole
       }).then(res => {
@@ -365,11 +377,14 @@ export default {
           this.roles = res.data.list.records
           this.total = res.data.list.total
           this.$message.success(res.message)
+        } else {
+          this.roles = []
+          this.total = 0
+          this.$message.error(res.message)
         }
       })
       // 重置查询条件
-      this.$refs.queryRef.resetFields()
-      this.dateRange = []
+      this.resetForm()
     },
 
     // ----- 修改角色状态 -----
