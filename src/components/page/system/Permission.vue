@@ -360,7 +360,23 @@ export default {
     },
 
     // ----- 修改角色状态 -----
-    handleStatus() {
+    handleStatus(data) {
+      const text = data.enabled === true ? "启用" : "停用"
+      this.$confirm('确定要"' + text + '"角色【' + data.name + '】吗?',
+          '提示',
+          {
+            confirmButtonText: '确 定',
+            cancelButtonText: '取 消',
+            type: 'warning'
+          }).then(() => {
+        this.API.roleStatus(data).then(res => {
+          if (res.success) {
+            this.$message.success(text + "成功")
+          }
+        })
+      }).catch(() => {
+        data.enabled = data.enabled !== true
+      })
     },
 
 
@@ -397,16 +413,22 @@ export default {
       if (this.editForm.id === undefined) {
         // 进行添加
 
+        this.API.roleAddOrUpdate(this.editForm).then(res => {
+          if (res.success) {
+            this.$message.success("添加成功")
+            this.initRole()
+          }
+        })
       } else {
         // 进行修改
-        this.API.roleUpdate(this.editForm).then(res => {
+
+        this.API.roleAddOrUpdate(this.editForm).then(res => {
           if (res.success) {
             this.$message.success(res.message)
             this.initRole()
           }
         })
       }
-      console.log(this.editForm.menuIds)
 
       // 数据清零
       this.editForm.menuIds = []
@@ -415,11 +437,45 @@ export default {
 
 
     // ----- 删除角色 -----
-    handleDelete() {
+    handleDelete(data) {
+      this.$confirm('此操作将永久删除所有与角色【' + data.name + '】相关的数据, 是否继续?',
+          '提示',
+          {
+            confirmButtonText: '确 定',
+            cancelButtonText: '取 消',
+            type: 'warning'
+          }).then(() => {
+            const deleteId = []
+            deleteId.push(data.id)
+            this.API.roleRemoveBatch(deleteId).then(res => {
+              if (res.success) {
+                this.$message.success(res.message)
+                this.initRole()
+              }
+            })
+          }).catch(() => {})
     },
-    handleSelectionChange() {
+    handleSelectionChange(val) {
+      // 传入选中的值
+      this.multipleSelection = val
+      // 遍历选中的值，将 id 存入一个集合中
+      this.ids = val.map(item => item.id)
     },
     deleteBatch() {
+      this.$confirm('此操作将永久删除与角色编号为【' + this.ids + '】相关的所有数据, 是否继续?',
+          '提示',
+          {
+            confirmButtonText: '确 定',
+            cancelButtonText: '取 消',
+            type: 'warning'
+          }).then(() => {
+            this.API.roleRemoveBatch(this.ids).then(data => {
+              if (data.success) {
+                this.$message.success(data.message)
+                this.initRole()
+              }
+            })
+          }).catch(() => {})
     },
 
     // ----- 表头样式 -----

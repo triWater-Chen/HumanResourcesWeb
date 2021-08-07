@@ -53,8 +53,11 @@ export default {
     roleGet(params) {
         return get('/system/basic/role/list', params)
     },
-    roleUpdate(params) {
-        return post('/system/basic/role/update', params)
+    roleStatus(params) {
+        return post('/system/basic/role/changeStatus', params)
+    },
+    roleAddOrUpdate(params) {
+        return post('/system/basic/role/saveOrUpdate', params)
     },
     roleRemoveBatch(params) {
         return post('/system/basic/role/removeBatch', params)
