@@ -1,6 +1,9 @@
 <template>
   <div class="permissionStyle">
-    <el-form :inline="true">
+    <el-form :inline="true"
+             :model="queryRole"
+             ref="queryRef"
+    >
       <el-form-item>
         <el-button type="primary"
                    icon="el-icon-plus"
@@ -34,28 +37,39 @@
         </el-button>
       </el-form-item>
       <el-form-item style="float: right;">
+        <el-date-picker  v-model="dateRange"
+                         size="small"
+                         style="width: 220px"
+                         value-format="yyyy-MM-dd"
+                         type="daterange"
+                         range-separator="-"
+                         start-placeholder="开始日期"
+                         end-placeholder="结束日期"
+        />
+      </el-form-item>
+      <el-form-item prop="enabled" style="float: right;">
         <el-select v-model="queryRole.enabled"
                    placeholder="角色状态"
                    clearable
                    size="small"
-                   style="width: 150px;"
+                   style="width: 120px;"
         >
           <el-option label="可用" value="true"></el-option>
           <el-option label="禁用" value="false"></el-option>
         </el-select>
       </el-form-item>
-      <el-form-item style="float: right;">
+      <el-form-item prop="namezh" style="float: right;">
         <el-input size="small"
                   v-model="queryRole.namezh"
-                  style="width: 200px;"
+                  style="width: 150px;"
                   placeholder="请输入角色中文名"
                   @keydown.enter.native="handleQuery"
         />
       </el-form-item>
-      <el-form-item style="float: right;">
+      <el-form-item prop="name" style="float: right;">
         <el-input size="small"
                   v-model="queryRole.name"
-                  style="width: 250px;"
+                  style="width: 220px;"
                   placeholder="请输入角色英文名"
                   @keydown.enter.native="handleQuery"
         >
@@ -213,6 +227,8 @@
 </template>
 
 <script>
+import {addDateRange} from "../../../utils/commonUtils";
+
 export default {
   name: "Permission",
   data() {
@@ -224,10 +240,8 @@ export default {
       queryRole: {
         current: 1,
         size: 6,
-        name: '',
-        namezh: '',
-        enabled: '',
       },
+      dateRange: [],
 
       title: '',
       roles: [],
@@ -345,7 +359,7 @@ export default {
     handleQuery() {
       this.queryRole.current = 1
       this.API.roleGet({
-        params: this.queryRole
+        params: addDateRange(this.queryRole, this.dateRange)
       }).then(res => {
         if (res.success) {
           this.roles = res.data.list.records
@@ -354,9 +368,8 @@ export default {
         }
       })
       // 重置查询条件
-      this.queryRole.name = ''
-      this.queryRole.namezh = ''
-      this.queryRole.enabled = ''
+      this.$refs.queryRef.resetFields()
+      this.dateRange = []
     },
 
     // ----- 修改角色状态 -----
