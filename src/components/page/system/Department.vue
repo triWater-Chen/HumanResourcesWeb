@@ -36,7 +36,7 @@
         <el-button icon="el-icon-search"
                    type="primary"
                    size="small"
-                   @click="handleAdd"
+                   @click="handleQuery"
         >
           查询
         </el-button>
@@ -130,6 +130,8 @@
 </template>
 
 <script>
+import {addDateRange} from "../../../utils/commonUtils";
+
 export default {
   name: "Department",
   data() {
@@ -150,9 +152,9 @@ export default {
 
     // ----- 初始化数据 -----
     initDepartment() {
-      this.API.departmentGet().then(res => {
+      this.API.departmentTree().then(res => {
         if (res.success) {
-          this.departments = res.data.list
+          this.departments = res.data.tree
         }
       })
     },
@@ -166,11 +168,24 @@ export default {
 
     // ----- 刷新数据 -----
     refreshDepartment() {
-      this.initDepartment()
     },
 
     // ----- 按条件查询 -----
     handleQuery() {
+      this.API.departmentGet({
+        params: addDateRange(this.queryDep, this.dateRange)
+      }).then(res => {
+        if (res.success) {
+          this.departments = res.data.list
+          this.$message.success(res.message)
+        } else {
+          this.departments = []
+          this.$message.error(res.message)
+        }
+      })
+      // 重置查询表单
+      this.queryDep = {}
+      this.dateRange = []
     },
 
     // ----- 修改部门状态 -----

@@ -72,8 +72,8 @@ export default {
     },
 
     // ----- 部门管理 -----
-    departmentGet() {
-        return get('/system/basic/department/list')
+    departmentGet(params) {
+        return get('/system/basic/department/list', params)
     },
     departmentAdd(params) {
         return post('/system//basic/department/add', params)
@@ -83,5 +83,9 @@ export default {
     },
     departmentRemoveBatch(params) {
         return post('/system//basic/department/removeBatch', params)
+    },
+    // ----- 查询部门树 -----
+    departmentTree() {
+        return get('/system/basic/department/departmentTree')
     },
 }
