@@ -66,6 +66,7 @@
                          width="150"
                          header-align="center"
                          align="center"
+                         sortable
         />
         <el-table-column prop="name"
                          label="职称名称"
