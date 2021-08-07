@@ -152,7 +152,7 @@ export default {
 
     // ----- 初始化数据 -----
     initDepartment() {
-      this.API.departmentTree().then(res => {
+      this.API.departmentTree(-1).then(res => {
         if (res.success) {
           this.departments = res.data.tree
         }

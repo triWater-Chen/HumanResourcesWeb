@@ -85,7 +85,7 @@ export default {
         return post('/system//basic/department/removeBatch', params)
     },
     // ----- 查询部门树 -----
-    departmentTree() {
-        return get('/system/basic/department/departmentTree')
+    departmentTree(params) {
+        return get('/system/basic/department/departmentTree/' + params)
     },
 }
