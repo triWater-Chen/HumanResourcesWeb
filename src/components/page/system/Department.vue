@@ -182,7 +182,7 @@
 </template>
 
 <script>
-import {addDateRange} from "../../../utils/commonUtils";
+import {addDateRange, copy} from "../../../utils/commonTools";
 import TreeSelect from "@riophae/vue-treeselect";
 import "@riophae/vue-treeselect/dist/vue-treeselect.css";
 
@@ -198,8 +198,9 @@ export default {
       title: '',
       departments: [],
       dialogVisible: false,
-      depTree: [],
 
+      depTreeTemp: [],
+      depTree: [],
       // 重新渲染组件（通过更改 key 强制刷新组件）
       componentKey: 0,
 
@@ -224,8 +225,11 @@ export default {
       this.API.departmentTree().then(res => {
         if (res.success) {
           this.departments = res.data.tree
+
+          // 将树存起来，用于赋值给下拉树
+          this.depTreeTemp = copy(this.departments)
           // 处理下拉数据
-          this.deleteChildren(this.departments)
+          this.deleteChildren(this.depTreeTemp)
         }
       })
     },
@@ -242,7 +246,8 @@ export default {
       this.API.departmentTree().then(res => {
         if (res.success) {
           this.departments = res.data.tree
-          this.deleteChildren(this.departments)
+          this.depTreeTemp = copy(this.departments)
+          this.deleteChildren(this.depTreeTemp)
 
           this.$message.success("刷新成功")
         }
@@ -313,7 +318,7 @@ export default {
       this.title = "添加部门"
 
       // 初始化下拉树
-      Object.assign(this.depTree, this.departments)
+      Object.assign(this.depTree, this.depTreeTemp)
       this.disabledDepartment(this.depTree, 0)
       // 重新渲染树
       this.componentKey--
@@ -327,7 +332,7 @@ export default {
       this.title = "修改部门"
 
       // 将子节点禁用，不允许修改子节点为自己的父节点
-      Object.assign(this.depTree, this.departments)
+      Object.assign(this.depTree, this.depTreeTemp)
       this.disabledDepartment(this.depTree, this.editForm.id)
       // 重新渲染树
       this.componentKey++
@@ -336,6 +341,27 @@ export default {
     },
     // ----- 添加、修改部门 -----
     handleForm() {
+
+      if (this.editForm.name && this.editForm.sort && this.editForm.parentId) {
+        if (this.editForm.id === undefined) {
+          // 进行添加
+
+          this.API.departmentAdd(this.editForm).then(res => {
+            if (res.success) {
+              this.$message.success(res.message)
+              this.initDepartment()
+            }
+          })
+        } else {
+          // 进行修改
+        }
+      } else if (!this.editForm.parentId) {
+        this.$message.error("上级部门不能为空")
+      } else if (!this.editForm.name) {
+        this.$message.error("部门名称不能为空")
+      } else {
+        this.$message.error("部门排序不能为空")
+      }
 
       this.dialogVisible = false
     },
