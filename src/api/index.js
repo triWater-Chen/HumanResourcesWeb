@@ -85,7 +85,11 @@ export default {
         return post('/system//basic/department/removeBatch', params)
     },
     // ----- 查询部门树 -----
-    departmentTree(params) {
-        return get('/system/basic/department/departmentTree/' + params)
+    departmentTree() {
+        return get('/system/basic/department/departmentTree')
+    },
+    // ----- 查询下拉框所需格式的部门树 -----
+    departmentOrderTree() {
+        return get('/system/basic/department/departmentOrderTree')
     },
 }

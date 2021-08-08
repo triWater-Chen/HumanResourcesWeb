@@ -126,21 +126,90 @@
       </el-table>
     </div>
 
+    <el-dialog :title="title"
+               :visible.sync="dialogVisible"
+               width="420px"
+               style="text-align: center"
+    >
+      <el-form>
+        <el-row>
+          <el-col :span="24">
+            <el-form-item style="display: flex; justify-content: center;">
+              <span slot="label" class="treeStyle">上级部门</span>
+              <TreeSelect v-model="editForm.parentId"
+                          :options="depTree"
+                          :normalizer="normalizer"
+                          placeholder="选择上级部门"
+                          style="width: 280px;"
+              />
+            </el-form-item>
+          </el-col>
+          <el-col :span="24">
+            <el-form-item>
+              <el-tag>部门名称</el-tag>
+              <el-input v-model="editForm.name"
+                        style="width: 280px; margin-left: 10px;"
+              />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item style="text-align: right">
+              <el-tag>部门顺序</el-tag>
+              <el-input-number v-model="editForm.sort"
+                               controls-position="right"
+                               :min="0"
+                               style="width: 100px; margin-left: 10px;"
+              />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item style="text-align: center">
+              <el-switch v-model="editForm.enabled"
+                         active-text="启用"
+                         inactive-text="禁用"
+              />
+            </el-form-item>
+          </el-col>
+        </el-row>
+      </el-form>
+      <span slot="footer" class="dialog-footer">
+        <el-button size="small" @click="dialogVisible = false">取 消</el-button>
+        <el-button size="small" type="primary" @click="handleForm">确 定</el-button>
+      </span>
+    </el-dialog>
   </div>
 </template>
 
 <script>
 import {addDateRange} from "../../../utils/commonUtils";
+import TreeSelect from "@riophae/vue-treeselect";
+import "@riophae/vue-treeselect/dist/vue-treeselect.css";
 
 export default {
   name: "Department",
+  components: { TreeSelect },
   data() {
     return {
       // 用于查询
       queryDep: {},
       dateRange: [],
 
+      title: '',
       departments: [],
+      dialogVisible: false,
+
+      defaultProps: {
+        children: 'children',
+        label: 'name'
+      },
+      depTree: [],
+
+      editForm: {
+        parentId: '',
+        sort: '',
+        enabled: true,
+        name: '',
+      },
     }
   },
 
@@ -152,10 +221,20 @@ export default {
 
     // ----- 初始化数据 -----
     initDepartment() {
-      this.API.departmentTree(-1).then(res => {
+      // 初始化页面树
+      this.API.departmentTree().then(res => {
         if (res.success) {
           this.departments = res.data.tree
         }
+      })
+      this.initDepartmentTree()
+    },
+    // 初始化下拉树
+    initDepartmentTree() {
+      this.API.departmentOrderTree().then(res => {
+        this.depTree = res.data.tree
+        // 处理下拉树数据
+        this.deleteChildren(this.depTree)
       })
     },
 
@@ -168,6 +247,12 @@ export default {
 
     // ----- 刷新数据 -----
     refreshDepartment() {
+      this.API.departmentTree().then(res => {
+        if (res.success) {
+          this.departments = res.data.tree
+          this.$message.success("刷新成功")
+        }
+      })
     },
 
     // ----- 按条件查询 -----
@@ -188,17 +273,38 @@ export default {
       this.dateRange = []
     },
 
+    // ----- 递归删除值为 null 的 children -----
+    deleteChildren(data) {
+      data.forEach(item => {
+        item.children === null ? delete item.children : this.deleteChildren(item.children)
+      })
+    },
+    // ----- 返回下拉树所需格式 -----
+    normalizer(node) {
+      return {
+        id: node.id,
+        label: node.name,
+        children: node.children
+      }
+    },
+
     // ----- 修改部门状态 -----
     handleStatus() {
     },
 
-    // ----- 添加、修改部门 -----
     handleAdd() {
+      this.dialogVisible = true
     },
     showAdd() {
     },
-    showEdit(val) {
-      console.log(val)
+    showEdit(data) {
+      Object.assign(this.editForm, data)
+      this.title = "修改角色"
+      this.dialogVisible = true
+    },
+    // ----- 添加、修改部门 -----
+    handleForm() {
+      this.dialogVisible = false
     },
 
     // ----- 删除部门 -----
@@ -214,5 +320,10 @@ export default {
 </script>
 
 <style scoped>
-
+.treeStyle {
+  color: #515a6e;
+  font-size: 14px;
+  font-weight: bold;
+  padding-left: 10px;
+}
 </style>
