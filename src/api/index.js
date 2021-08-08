@@ -88,8 +88,4 @@ export default {
     departmentTree() {
         return get('/system/basic/department/departmentTree')
     },
-    // ----- 查询下拉框所需格式的部门树 -----
-    departmentOrderTree() {
-        return get('/system/basic/department/departmentOrderTree')
-    },
 }

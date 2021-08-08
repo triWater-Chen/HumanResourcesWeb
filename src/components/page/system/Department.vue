@@ -52,7 +52,7 @@
         <el-button icon="el-icon-plus"
                    type="primary"
                    size="small"
-                   @click="handleAdd"
+                   @click="showAdd"
         >
           添加
         </el-button>
@@ -133,12 +133,13 @@
     >
       <el-form>
         <el-row>
-          <el-col :span="24">
+          <el-col :span="24" v-if="editForm.parentId !== -1">
             <el-form-item style="display: flex; justify-content: center;">
               <span slot="label" class="treeStyle">上级部门</span>
               <TreeSelect v-model="editForm.parentId"
                           :options="depTree"
                           :normalizer="normalizer"
+                          :key="componentKey"
                           placeholder="选择上级部门"
                           style="width: 280px;"
               />
@@ -197,12 +198,10 @@ export default {
       title: '',
       departments: [],
       dialogVisible: false,
-
-      defaultProps: {
-        children: 'children',
-        label: 'name'
-      },
       depTree: [],
+
+      // 重新渲染组件（通过更改 key 强制刷新组件）
+      componentKey: 0,
 
       editForm: {
         parentId: '',
@@ -225,16 +224,9 @@ export default {
       this.API.departmentTree().then(res => {
         if (res.success) {
           this.departments = res.data.tree
+          // 处理下拉数据
+          this.deleteChildren(this.departments)
         }
-      })
-      this.initDepartmentTree()
-    },
-    // 初始化下拉树
-    initDepartmentTree() {
-      this.API.departmentOrderTree().then(res => {
-        this.depTree = res.data.tree
-        // 处理下拉树数据
-        this.deleteChildren(this.depTree)
       })
     },
 
@@ -250,6 +242,8 @@ export default {
       this.API.departmentTree().then(res => {
         if (res.success) {
           this.departments = res.data.tree
+          this.deleteChildren(this.departments)
+
           this.$message.success("刷新成功")
         }
       })
@@ -279,6 +273,22 @@ export default {
         item.children === null ? delete item.children : this.deleteChildren(item.children)
       })
     },
+    // ----- 递归将节点禁用 -----
+    disabledDepartment(data, id) {
+      data.forEach(item => {
+        if (item.children !== undefined) {
+          if (item.id === id || item.parentId === id) {
+            item.isDisabled = true
+            this.disabledDepartment(item.children, item.id)
+          } else {
+            item.isDisabled = false
+            this.disabledDepartment(item.children, id)
+          }
+        } else {
+          item.isDisabled = item.id === id;
+        }
+      })
+    },
     // ----- 返回下拉树所需格式 -----
     normalizer(node) {
       return {
@@ -292,20 +302,44 @@ export default {
     handleStatus() {
     },
 
-    handleAdd() {
+
+    // ----- 初始化添加按钮 -----
+    showAdd(data) {
+      // 初始化表单数据
+      this.editForm = {enabled: true}
+      if (data !== undefined) {
+        this.editForm.parentId = data.id
+      }
+      this.title = "添加部门"
+
+      // 初始化下拉树
+      Object.assign(this.depTree, this.departments)
+      this.disabledDepartment(this.depTree, 0)
+      // 重新渲染树
+      this.componentKey--
+
       this.dialogVisible = true
     },
-    showAdd() {
-    },
+    // ----- 初始化修改按钮 -----
     showEdit(data) {
+      // 初始化表单数据
       Object.assign(this.editForm, data)
-      this.title = "修改角色"
+      this.title = "修改部门"
+
+      // 将子节点禁用，不允许修改子节点为自己的父节点
+      Object.assign(this.depTree, this.departments)
+      this.disabledDepartment(this.depTree, this.editForm.id)
+      // 重新渲染树
+      this.componentKey++
+
       this.dialogVisible = true
     },
     // ----- 添加、修改部门 -----
     handleForm() {
+
       this.dialogVisible = false
     },
+
 
     // ----- 删除部门 -----
     handleDelete() {
