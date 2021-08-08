@@ -139,10 +139,10 @@
               <TreeSelect v-model="editForm.parentId"
                           :options="depTree"
                           :normalizer="normalizer"
-                          :key="componentKey"
                           placeholder="选择上级部门"
                           style="width: 280px;"
               />
+              <!-- :key="componentKey" -->
             </el-form-item>
           </el-col>
           <el-col :span="24">
@@ -202,6 +202,7 @@ export default {
       depTreeTemp: [],
       depTree: [],
       // 重新渲染组件（通过更改 key 强制刷新组件）
+      // 使用深拷贝后，便不需要重新渲染，对源对象的修改不会影响现对象
       componentKey: 0,
 
       editForm: {
@@ -227,6 +228,7 @@ export default {
           this.departments = res.data.tree
 
           // 将树存起来，用于赋值给下拉树
+          // 否则查询后，通过 departments 赋值给下拉树的就不是完整的部门
           this.depTreeTemp = copy(this.departments)
           // 处理下拉数据
           this.deleteChildren(this.depTreeTemp)
@@ -278,10 +280,11 @@ export default {
         item.children === null ? delete item.children : this.deleteChildren(item.children)
       })
     },
-    // ----- 递归将节点禁用 -----
+    // ----- 递归将等于 id 的节点及其子节点进行禁用 -----
     disabledDepartment(data, id) {
       data.forEach(item => {
         if (item.children !== undefined) {
+          // 若有子节点，则判断是否为本身或其子节点
           if (item.id === id || item.parentId === id) {
             item.isDisabled = true
             this.disabledDepartment(item.children, item.id)
@@ -290,6 +293,7 @@ export default {
             this.disabledDepartment(item.children, id)
           }
         } else {
+          // 若无子节点，则只需判断是否为本身
           item.isDisabled = item.id === id;
         }
       })
@@ -317,25 +321,25 @@ export default {
       }
       this.title = "添加部门"
 
-      // 初始化下拉树
-      Object.assign(this.depTree, this.depTreeTemp)
+      // 初始化下拉树，不禁用节点
+      this.depTree = copy(this.depTreeTemp)
       this.disabledDepartment(this.depTree, 0)
       // 重新渲染树
-      this.componentKey--
+      // this.componentKey--
 
       this.dialogVisible = true
     },
     // ----- 初始化修改按钮 -----
     showEdit(data) {
-      // 初始化表单数据
+      // 初始化表单数据（浅拷贝即可）
       Object.assign(this.editForm, data)
       this.title = "修改部门"
 
       // 将子节点禁用，不允许修改子节点为自己的父节点
-      Object.assign(this.depTree, this.depTreeTemp)
+      this.depTree = copy(this.depTreeTemp)
       this.disabledDepartment(this.depTree, this.editForm.id)
       // 重新渲染树
-      this.componentKey++
+      // this.componentKey++
 
       this.dialogVisible = true
     },
