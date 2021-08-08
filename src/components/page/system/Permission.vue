@@ -232,7 +232,7 @@
 </template>
 
 <script>
-import {addDateRange} from "../../../utils/commonUtils";
+import {addDateRange} from "../../../utils/commonTools";
 
 export default {
   name: "Permission",
@@ -464,13 +464,13 @@ export default {
           }
 
         } else {
-          this.$message.success("角色英文名称格式不正确")
+          this.$message.error("角色英文名称格式不正确")
         }
       } else {
         if (!this.editForm.name) {
-          this.$message.success("角色英文名称不能为空")
+          this.$message.error("角色英文名称不能为空")
         } else {
-          this.$message.success("角色中文名称不能为空")
+          this.$message.error("角色中文名称不能为空")
         }
       }
 

@@ -109,7 +109,7 @@
                width="420px"
                style="text-align: center"
     >
-      <el-form>
+      <el-form @submit.native.prevent>
         <el-form-item>
           <el-tag>职位名称</el-tag>
           <el-input v-model="editPost.name"
@@ -222,14 +222,18 @@ export default {
       this.dialogVisible = true
     },
     handleEdit() {
-      this.API.positionUpdate(this.editPost).then(data => {
-        if (data.success) {
-          this.$message.success(data.message)
-          this.initPosition()
-          this.editPost.name = ''
-          this.dialogVisible = false
+      if (this.editPost.name) {
+        this.API.positionUpdate(this.editPost).then(data => {
+          if (data.success) {
+            this.$message.success(data.message)
+            this.initPosition()
+            this.editPost.name = ''
+            this.dialogVisible = false
+          }
+        })
+      } else {
+        this.$message.error("职位名称不可为空")
       }
-      })
     },
 
     // ----- 删除职位 -----

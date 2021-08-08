@@ -134,7 +134,7 @@
     >
       <el-form>
         <el-form-item>
-          <el-tag>职位名称</el-tag>
+          <el-tag>职称名称</el-tag>
           <el-input v-model="editPost.name"
                     size="medium"
                     style="width: 200px; margin-left: 10px;"
@@ -241,7 +241,7 @@ export default {
         })
       } else {
         if (!this.addLevel.name) {
-          this.$message.error("职位名称不可为空")
+          this.$message.error("职称名称不可为空")
         } else {
           this.$message.error("职称等级不可为空")
         }
@@ -282,6 +282,8 @@ export default {
             this.dialogVisible = false
           }
         })
+      } else {
+        this.$message.error("职称名称不可为空")
       }
     },
 
