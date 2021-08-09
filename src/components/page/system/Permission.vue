@@ -405,14 +405,14 @@ export default {
             cancelButtonText: '取 消',
             type: 'warning'
           }).then(() => {
-        this.API.roleStatus(data).then(res => {
-          if (res.success) {
-            this.$message.success(text + "成功")
-          }
-        })
-      }).catch(() => {
-        data.enabled = data.enabled !== true
-      })
+            this.API.roleStatus(data).then(res => {
+              if (res.success) {
+                this.$message.success(text + "成功")
+              }
+            })
+          }).catch(() => {
+            data.enabled = data.enabled !== true
+          })
     },
 
 
@@ -450,9 +450,9 @@ export default {
               if (res.success) {
                 this.$message.success("添加成功")
                 this.initRole()
+                this.dialogVisible = false
               }
             })
-            this.dialogVisible = false
           } else {
             // 进行修改
 
@@ -460,9 +460,9 @@ export default {
               if (res.success) {
                 this.$message.success(res.message)
                 this.initRole()
+                this.dialogVisible = false
               }
             })
-            this.dialogVisible = false
           }
 
         } else {

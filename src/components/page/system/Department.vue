@@ -381,9 +381,9 @@ export default {
             if (res.success) {
               this.$message.success(res.message)
               this.initDepartment()
+              this.dialogVisible = false
             }
           })
-          this.dialogVisible = false
         } else {
           // 进行修改
 
@@ -391,9 +391,9 @@ export default {
             if (res.success) {
               this.$message.success(res.message)
               this.initDepartment()
+              this.dialogVisible = false
             }
           })
-          this.dialogVisible = false
         }
       }
     },
