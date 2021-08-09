@@ -14,7 +14,7 @@ axios.defaults.baseURL = '/cl'
 axios.interceptors.response.use(response => {
 
     // 服务器内部发生错误
-    if (response.status && response.status === 200 && response.data.code === 500) {
+    if (response.status && response.status === 200 && !response.data.success) {
         // 给出后端返回的错误提示
         Message.error({message: response.data.message})
         return
@@ -53,7 +53,9 @@ export function get(url, params) {
     return new Promise(((resolve, reject) => {
         axios.get(url, params)
             .then(res => {
-                resolve(res.data)
+                if (res !== undefined) {
+                    resolve(res.data)
+                }
             })
             .catch(err => {
                 reject(err)
@@ -69,7 +71,9 @@ export function post(url, params) {
         // post 提交的参数需要序列化
         axios.post(url, params)
             .then(res => {
-                resolve(res.data)
+                if (res !== undefined) {
+                    resolve(res.data)
+                }
             })
             .catch(err => {
                 reject(err)
