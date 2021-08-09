@@ -145,7 +145,7 @@
               <!-- :key="componentKey" -->
             </el-form-item>
           </el-col>
-          <el-col :span="24">
+          <el-col>
             <el-form-item>
               <el-tag>部门名称</el-tag>
               <el-input v-model="editForm.name"
@@ -308,7 +308,8 @@ export default {
     },
 
     // ----- 修改部门状态 -----
-    handleStatus() {
+    handleStatus(data) {
+      console.log(data)
     },
 
 
@@ -346,7 +347,13 @@ export default {
     // ----- 添加、修改部门 -----
     handleForm() {
 
-      if (this.editForm.name && this.editForm.sort && this.editForm.parentId) {
+      if (!this.editForm.parentId && this.editForm.parentId !== -1) {
+        this.$message.error("上级部门不能为空")
+      } else if (!this.editForm.name) {
+        this.$message.error("部门名称不能为空")
+      } else if (!(this.editForm.sort >= 0)){
+        this.$message.error("部门顺序不能为空")
+      } else {
         if (this.editForm.id === undefined) {
           // 进行添加
 
@@ -356,18 +363,14 @@ export default {
               this.initDepartment()
             }
           })
+          this.dialogVisible = false
         } else {
           // 进行修改
-        }
-      } else if (!this.editForm.parentId) {
-        this.$message.error("上级部门不能为空")
-      } else if (!this.editForm.name) {
-        this.$message.error("部门名称不能为空")
-      } else {
-        this.$message.error("部门排序不能为空")
-      }
 
-      this.dialogVisible = false
+          console.log(this.editForm)
+          this.dialogVisible = false
+        }
+      }
     },
 
 

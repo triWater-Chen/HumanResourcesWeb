@@ -452,6 +452,7 @@ export default {
                 this.initRole()
               }
             })
+            this.dialogVisible = false
           } else {
             // 进行修改
 
@@ -461,6 +462,7 @@ export default {
                 this.initRole()
               }
             })
+            this.dialogVisible = false
           }
 
         } else {
@@ -476,7 +478,6 @@ export default {
 
       // 数据清零
       this.editForm.menuIds = []
-      this.dialogVisible = false
     },
 
 
