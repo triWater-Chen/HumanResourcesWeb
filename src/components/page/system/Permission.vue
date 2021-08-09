@@ -381,11 +381,11 @@ export default {
       this.API.roleGet({
         params: addDateRange(this.queryRole, this.dateRange)
       }).then(res => {
-        if (res.success) {
+        if (res.code === 200) {
           this.roles = res.data.list.records
           this.total = res.data.list.total
           this.$message.success(res.message)
-        } else {
+        } else if (res.code === 500) {
           this.roles = []
           this.total = 0
           this.$message.error(res.message)
