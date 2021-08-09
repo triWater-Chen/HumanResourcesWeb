@@ -81,8 +81,8 @@ export default {
     departmentUpdate(params) {
         return post('/system//basic/department/update', params)
     },
-    departmentRemoveBatch(params) {
-        return post('/system//basic/department/removeBatch', params)
+    departmentRemove(params) {
+        return post('/system//basic/department/remove/' + params)
     },
     // ----- 查询部门树 -----
     departmentTree() {

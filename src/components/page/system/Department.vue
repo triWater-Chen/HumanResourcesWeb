@@ -88,9 +88,8 @@
                          align="center"
         >
           <template slot-scope="scope">
-            <el-switch v-model="scope.row.enabled"
-                       @change="handleStatus(scope.row)"
-            />
+            <el-tag effect="dark" type="success" v-if="scope.row.enabled">已启用</el-tag>
+            <el-tag effect="dark" type="info" v-else>未启用</el-tag>
           </template>
         </el-table-column>
         <el-table-column label="操作"
@@ -308,30 +307,6 @@ export default {
       }
     },
 
-    // ----- 修改部门状态 -----
-    handleStatus(data) {
-      // 下拉树中不用禁止不可用的部门，因为就算不可用的部门也需要调整，而不是不能调整
-      // 状态调整：若节点禁用，其子节点需全是禁用状态；若节点可用，其父节点必可用
-      const text = data.enabled === true ? "启用" : "停用"
-      this.$confirm('确定要"' + text + '"部门【' + data.name + '】吗?',
-          '提示',
-          {
-            confirmButtonText: '确 定',
-            cancelButtonText: '取 消',
-            type: 'warning'
-          }).then(() => {
-            this.API.departmentUpdate(data).then(res => {
-              if (res.success) {
-                this.flag = true
-                this.$message.success(text + "成功")
-              }
-            })
-            this.initDepartment()
-          }).catch(() => {
-            data.enabled = data.enabled !== true
-          })
-    },
-
 
     // ----- 初始化添加按钮 -----
     showAdd(data) {
@@ -366,6 +341,8 @@ export default {
     },
     // ----- 添加、修改部门 -----
     handleForm() {
+      // 下拉树中不用禁止不可用的部门，因为就算不可用的部门也需要调整，而不是不能调整
+      // 状态调整：若节点禁用，其子节点需全是禁用状态；若节点可用，其父节点必可用
 
       if (!this.editForm.parentId && this.editForm.parentId !== -1) {
         this.$message.error("上级部门不能为空")
@@ -400,7 +377,21 @@ export default {
 
 
     // ----- 删除部门 -----
-    handleDelete() {
+    handleDelete(data) {
+      this.$confirm('此操作将永久删除部门【' + data.name + '】, 是否继续?',
+          '提示',
+          {
+            confirmButtonText: '确 定',
+            cancelButtonText: '取 消',
+            type: 'warning'
+          }).then(() => {
+            this.API.departmentRemove(data.id).then(res => {
+              if (res.success) {
+                this.$message.success(res.message)
+                this.initDepartment()
+              }
+            })
+          }).catch(() => {})
     },
 
     // ----- 表头样式 -----
