@@ -75,11 +75,8 @@ export default {
     departmentGet(params) {
         return get('/system/basic/department/list', params)
     },
-    departmentAdd(params) {
-        return post('/system//basic/department/add', params)
-    },
-    departmentUpdate(params) {
-        return post('/system//basic/department/update', params)
+    departmentAddOrUpdate(params) {
+        return post('/system//basic/department/saveOrUpdate', params)
     },
     departmentRemoveBatch(params) {
         return post('/system//basic/department/removeBatch', params)

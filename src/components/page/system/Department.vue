@@ -227,8 +227,9 @@ export default {
         if (res.success) {
           this.departments = res.data.tree
 
-          // 将树存起来，用于赋值给下拉树
-          // 否则查询后，通过 departments 赋值给下拉树的就不是完整的部门
+          // 使用深拷贝，将树存起来，用于赋值给下拉树
+            // 原因一：在查询后，通过 departments 赋值给下拉树的就不是完整的部门
+            // 原因二：使用深拷贝，使得对下拉树的操作不会影响到 departments （即表格）数据
           this.depTreeTemp = copy(this.departments)
           // 处理下拉数据
           this.deleteChildren(this.depTreeTemp)
@@ -357,9 +358,9 @@ export default {
         if (this.editForm.id === undefined) {
           // 进行添加
 
-          this.API.departmentAdd(this.editForm).then(res => {
+          this.API.departmentAddOrUpdate(this.editForm).then(res => {
             if (res.success) {
-              this.$message.success(res.message)
+              this.$message.success("添加成功")
               this.initDepartment()
             }
           })
@@ -367,7 +368,12 @@ export default {
         } else {
           // 进行修改
 
-          console.log(this.editForm)
+          this.API.departmentAddOrUpdate(this.editForm).then(res => {
+            if (res.success) {
+              this.$message.success(res.message)
+              this.initDepartment()
+            }
+          })
           this.dialogVisible = false
         }
       }
