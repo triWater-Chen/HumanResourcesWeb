@@ -262,10 +262,10 @@ export default {
       this.API.departmentGet({
         params: addDateRange(this.queryDep, this.dateRange)
       }).then(res => {
-        if (res.success) {
+        if (res.code === 200) {
           this.departments = res.data.list
           this.$message.success(res.message)
-        } else {
+        } else if (res.code === 500) {
           this.departments = []
           this.$message.error(res.message)
         }
@@ -310,7 +310,26 @@ export default {
 
     // ----- 修改部门状态 -----
     handleStatus(data) {
-      console.log(data)
+      // 下拉树中不用禁止不可用的部门，因为就算不可用的部门也需要调整，而不是不能调整
+      // 状态调整：若节点禁用，其子节点需全是禁用状态；若节点可用，其父节点必可用
+      const text = data.enabled === true ? "启用" : "停用"
+      this.$confirm('确定要"' + text + '"部门【' + data.name + '】吗?',
+          '提示',
+          {
+            confirmButtonText: '确 定',
+            cancelButtonText: '取 消',
+            type: 'warning'
+          }).then(() => {
+            this.API.departmentUpdate(data).then(res => {
+              if (res.success) {
+                this.flag = true
+                this.$message.success(text + "成功")
+              }
+            })
+            this.initDepartment()
+          }).catch(() => {
+            data.enabled = data.enabled !== true
+          })
     },
 
 
@@ -358,9 +377,9 @@ export default {
         if (this.editForm.id === undefined) {
           // 进行添加
 
-          this.API.departmentAddOrUpdate(this.editForm).then(res => {
+          this.API.departmentAdd(this.editForm).then(res => {
             if (res.success) {
-              this.$message.success("添加成功")
+              this.$message.success(res.message)
               this.initDepartment()
             }
           })
@@ -368,7 +387,7 @@ export default {
         } else {
           // 进行修改
 
-          this.API.departmentAddOrUpdate(this.editForm).then(res => {
+          this.API.departmentUpdate(this.editForm).then(res => {
             if (res.success) {
               this.$message.success(res.message)
               this.initDepartment()
