@@ -5,8 +5,8 @@
       <el-aside style="background-color: #001529; width: auto" >
         <el-menu router
                  background-color="#001529"
-                 text-color="#fff"
-                 active-text-color="#1890ff"
+                 text-color="#ffffffa6"
+                 active-text-color="#fff"
                  unique-opened
                  class="collapseStyle"
                  :collapse="isCollapse"
@@ -81,7 +81,7 @@ export default {
   },
   data() {
     return {
-      isCollapse: true
+      isCollapse: false
     }
   }
 }
@@ -110,5 +110,21 @@ export default {
     z-index: 1;
     text-align: center;
     cursor: pointer;
+  }
+  .el-menu-item{
+    background-color: #000c17 !important;
+  }
+  .el-menu-item:hover{
+    color: #fff !important;
+  }
+  .el-menu-item.is-active {
+    background: #1890ff !important;
+    color: #fff !important;
+  }
+  .el-submenu__title:hover {
+    color: #fff!important;
+  }
+  .el-submenu.is-opened {
+    color: #000c17 !important;
   }
 </style>
