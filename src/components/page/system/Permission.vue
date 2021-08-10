@@ -204,7 +204,7 @@
             </div>
               <el-checkbox v-model="menuExpand" @change="handleMenuExpand">展开/折叠</el-checkbox>
               <el-checkbox v-model="menuAllChecked" @change="handleMenuAllChecked">全选/全不选</el-checkbox>
-              <el-checkbox v-model="checkStrictly" @change="handleCheckStrictly">父子联动</el-checkbox>
+<!--              <el-checkbox v-model="checkStrictly" @change="handleCheckStrictly">父子联动</el-checkbox>-->
             <div>
               <el-tree class="tree-border"
                        ref="tree"
@@ -213,8 +213,8 @@
                        node-key="id"
                        :data="menuTree"
                        :props="defaultProps"
-                       :check-strictly="!checkStrictly"
               />
+            <!-- :check-strictly="!checkStrictly" -->
             </div>
           </el-card>
         </el-form-item>
@@ -261,7 +261,7 @@ export default {
       },
       menuExpand: false,
       menuAllChecked: false,
-      checkStrictly: true,
+      // checkStrictly: true,
 
       dialogVisible: false,
       // 用于添加、编辑角色
@@ -329,15 +329,15 @@ export default {
     handleMenuAllChecked(val) {
       this.$refs.tree.setCheckedNodes(val ? this.menuTree : [])
     },
-    // ----- 处理树形中，父子关联 -----
-    handleCheckStrictly(val) {
-      this.checkStrictly = !!val
-    },
+    // // ----- 处理树形中，父子关联 -----
+    // handleCheckStrictly(val) {
+    //   this.checkStrictly = !!val
+    // },
     // ----- 重置树形数据 -----
     resetTree() {
       this.menuExpand = false
       this.menuAllChecked = false
-      this.checkStrictly = true
+      // this.checkStrictly = true
       if (this.$refs.tree !== undefined) {
         this.$refs.tree.setCheckedKeys([])
       }
@@ -440,6 +440,11 @@ export default {
     handleForm() {
       // 设置该角色所属的菜单
       this.editForm.menuIds = this.$refs.tree.getCheckedKeys(true)
+      // // 如果取消父子联动，选择的是 半选父节点 的值，上一步需改为：
+      // let checkedKeys = this.$refs.tree.getCheckedKeys()
+      // let halfCheckedKeys = this.$refs.tree.getHalfCheckedKeys()
+      // checkedKeys.unshift.apply(checkedKeys, halfCheckedKeys)
+      // this.editForm.menuIds = checkedKeys
 
       if (this.editForm.name && this.editForm.namezh) {
         const check = /^\w{1,15}$/
