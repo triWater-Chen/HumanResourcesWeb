@@ -3,7 +3,7 @@
     <div class="title">人事管理</div>
     <el-dropdown class="userInfo" @command="commandHandler">
       <span class="el-dropdown-link">
-        <i><img :src="user.userface" alt=""></i>{{user.name}}
+        <i><img :src="user.userFace" alt=""></i>{{user.name}}
       </span>
       <el-dropdown-menu slot="dropdown">
         <el-dropdown-item command="userinfo">个人中心</el-dropdown-item>
@@ -22,7 +22,7 @@ export default {
   data() {
     return {
       user: {
-        userface: 'http://bpic.588ku.com/element_pic/01/40/00/64573ce2edc0728.jpg',
+        userFace: 'http://bpic.588ku.com/element_pic/01/40/00/64573ce2edc0728.jpg',
         name: 'AAA'
       }
     }
@@ -38,7 +38,7 @@ export default {
         }).then(() => {
           this.API.logout()
               .then((res) => {
-                this.SessionStorage.remove("USER")
+                this.SessionStorage.clearAll()
                 this.$store.commit("saveRoutes", [])
                 this.$router.replace("/login")
                 if (res.success) {

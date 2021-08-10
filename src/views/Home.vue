@@ -1,13 +1,17 @@
 <template>
-  <section>
+  <el-container direction="vertical">
     <Header></Header>
     <el-container>
-      <el-aside width="200px">
+      <el-aside style="background-color: #001529; width: auto" >
         <el-menu router
                  background-color="#001529"
-                 text-color="#fff"
-                 active-text-color="#1890ff"
+                 text-color="#ffffffa6"
+                 active-text-color="#fff"
                  unique-opened
+                 :default-active="$route.path"
+                 :collapse="isCollapse"
+                 :collapse-transition="false"
+                 class="collapseStyle"
         >
           <el-submenu :index="index + ''"
                       v-for="(item, index) in routes"
@@ -24,11 +28,27 @@
               {{child.name}}
             </el-menu-item>
           </el-submenu>
+          <div class="collapseMenu"
+               @click="changeCollapse"
+               v-show="isCollapse"
+          >
+            <i class="el-icon-d-arrow-right" />
+          </div>
+          <div class="collapseMenu"
+               @click="changeCollapse"
+               v-show="!isCollapse"
+          >
+            <i class="el-icon-d-arrow-left" />
+          </div>
         </el-menu>
       </el-aside>
-      <section>
+      <el-container direction="vertical" style="height: calc(100vh - 60px)">
         <el-main>
-          <el-breadcrumb separator-class="el-icon-arrow-right" v-show="this.$router.currentRoute.path !== '/'">
+          <el-breadcrumb
+              style="margin-left: 10px; margin-top: 10px;"
+              separator-class="el-icon-arrow-right"
+              v-show="this.$router.currentRoute.path !== '/'"
+          >
             <el-breadcrumb-item :to="{ path: '/' }">
               首页
             </el-breadcrumb-item>
@@ -36,18 +56,18 @@
               {{this.$router.currentRoute.name}}
             </el-breadcrumb-item>
           </el-breadcrumb>
-          <router-view />
+          <router-view class="homeRouterView" />
         </el-main>
-        <Footer />
-      </section>
+        <Footer v-show="this.$router.currentRoute.path !== '/system/basic'"/>
+      </el-container>
     </el-container>
-  </section>
+  </el-container>
 </template>
 
 <script>
 
-import Header from "../components/Header";
-import Footer from "../components/Footer";
+import Header from "../components/layout/Header";
+import Footer from "../components/layout/Footer";
 export default {
   name: 'Home',
   components: {
@@ -57,8 +77,63 @@ export default {
 
   computed: {
     routes() {
+      // 从 store 中获取菜单列表
       return this.$store.state.myRoutes
+    }
+  },
+  data() {
+    return {
+      isCollapse: this.SessionStorage.get("collapse")
+    }
+  },
+  methods: {
+    changeCollapse() {
+      // 将侧边栏状态存入 sessionStorage
+      this.SessionStorage.set("collapse", !this.isCollapse)
+      this.isCollapse = this.SessionStorage.get("collapse")
     }
   }
 }
 </script>
+
+<style>
+  .homeRouterView {
+    margin-top: 20px;
+    margin-left: 10px;
+  }
+  .el-container {
+    height: 100%;
+  }
+  .el-aside .el-menu {
+    border-right: none;
+  }
+  .collapseStyle:not(.el-menu--collapse) {
+    width: 200px;
+  }
+  .collapseMenu {
+    width: 64px;
+    height: 45px;
+    position: fixed;
+    bottom: 0;
+    color: white;
+    z-index: 1;
+    text-align: center;
+    cursor: pointer;
+  }
+  .el-menu-item{
+    background-color: #000c17 !important;
+  }
+  .el-menu-item:hover{
+    color: #fff !important;
+  }
+  .el-menu-item.is-active {
+    background: #1890ff !important;
+    color: #fff !important;
+  }
+  .el-submenu__title:hover {
+    color: #fff!important;
+  }
+  .el-submenu.is-opened {
+    color: #000c17 !important;
+  }
+</style>
