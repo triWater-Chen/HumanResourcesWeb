@@ -99,20 +99,27 @@
         />
         <el-table-column prop="id"
                          label="编号"
-                         width="150"
+                         width="100"
                          header-align="center"
                          align="center"
                          sortable
         />
         <el-table-column prop="name"
                          label="角色英文名称"
-                         min-width="200"
+                         min-width="170"
                          header-align="center"
                          align="center"
         />
         <el-table-column prop="namezh"
                          label="角色中文名称"
-                         min-width="200"
+                         min-width="170"
+                         header-align="center"
+                         align="center"
+        />
+        <el-table-column prop="remark"
+                         label="角色描述"
+                         min-width="250"
+                         show-overflow-tooltip
                          header-align="center"
                          align="center"
         />
@@ -189,6 +196,17 @@
           <el-tag>角色中文名称</el-tag>
           <el-input v-model="editForm.namezh"
                     size="medium"
+                    style="width: 280px; margin-left: 10px;"
+          />
+        </el-form-item>
+        <el-form-item>
+          <el-tag>角色作用描述</el-tag>
+          <el-input v-model="editForm.remark"
+                    size="medium"
+                    type="textarea"
+                    :autosize="{minRows: 2, maxRows: 2}"
+                    maxlength="40"
+                    show-word-limit
                     style="width: 280px; margin-left: 10px;"
           />
         </el-form-item>
@@ -269,6 +287,7 @@ export default {
         id: '',
         name: '',
         namezh: '',
+        remark: '',
         enabled: true,
         menuIds: [],
       },
