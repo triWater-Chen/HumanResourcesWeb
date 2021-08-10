@@ -52,6 +52,8 @@
       <el-table :data="levels"
                 border
                 stripe
+                size="small"
+                style="font-size: 13px;"
                 :header-cell-style="myTableStyle"
                 @selection-change="handleSelectionChange"
       >

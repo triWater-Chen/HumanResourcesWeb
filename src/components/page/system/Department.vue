@@ -65,6 +65,8 @@
                 ref="tableRef"
                 default-expand-all
                 border
+                size="small"
+                style="font-size: 13px;"
                 :header-cell-style="myTableStyle"
                 @cell-click="handleClick"
       >
