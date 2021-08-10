@@ -8,8 +8,10 @@
                  text-color="#ffffffa6"
                  active-text-color="#fff"
                  unique-opened
-                 class="collapseStyle"
+                 :default-active="$route.path"
                  :collapse="isCollapse"
+                 :collapse-transition="false"
+                 class="collapseStyle"
         >
           <el-submenu :index="index + ''"
                       v-for="(item, index) in routes"
@@ -27,13 +29,13 @@
             </el-menu-item>
           </el-submenu>
           <div class="collapseMenu"
-               @click="isCollapse = false"
+               @click="changeCollapse"
                v-show="isCollapse"
           >
             <i class="el-icon-d-arrow-right" />
           </div>
           <div class="collapseMenu"
-               @click="isCollapse = true"
+               @click="changeCollapse"
                v-show="!isCollapse"
           >
             <i class="el-icon-d-arrow-left" />
@@ -81,7 +83,14 @@ export default {
   },
   data() {
     return {
-      isCollapse: false
+      isCollapse: this.SessionStorage.get("collapse")
+    }
+  },
+  methods: {
+    changeCollapse() {
+      // 将侧边栏状态存入 sessionStorage
+      this.SessionStorage.set("collapse", !this.isCollapse)
+      this.isCollapse = this.SessionStorage.get("collapse")
     }
   }
 }

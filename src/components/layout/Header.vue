@@ -38,7 +38,7 @@ export default {
         }).then(() => {
           this.API.logout()
               .then((res) => {
-                this.SessionStorage.remove("USER")
+                this.SessionStorage.clearAll()
                 this.$store.commit("saveRoutes", [])
                 this.$router.replace("/login")
                 if (res.success) {
