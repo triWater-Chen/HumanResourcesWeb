@@ -19,20 +19,20 @@ export default {
 
     // ----- 职位管理 -----
     positionGet() {
-        return get('/system//basic/position/list')
+        return get('/system/basic/position/list')
     },
     positionAdd(params) {
-        return post('/system//basic/position/add', params)
+        return post('/system/basic/position/add', params)
     },
     positionUpdate(params) {
-        return post('/system//basic/position/update', params)
+        return post('/system/basic/position/update', params)
     },
     positionRemove(params) {
         // 删除单个，未使用
-        return post('/system//basic/position/remove/' + params)
+        return post('/system/basic/position/remove/' + params)
     },
     positionRemoveBatch(params) {
-        return post('/system//basic/position/removeBatch', params)
+        return post('/system/basic/position/removeBatch', params)
     },
 
     // ----- 职称管理 -----
@@ -40,10 +40,10 @@ export default {
         return get('/system/basic/jobLevel/list')
     },
     jobLevelAdd(params) {
-        return post('/system//basic/jobLevel/add', params)
+        return post('/system/basic/jobLevel/add', params)
     },
     jobLevelUpdate(params) {
-        return post('/system//basic/jobLevel/update', params)
+        return post('/system/basic/jobLevel/update', params)
     },
     jobLevelRemoveBatch(params) {
         return post('/system//basic/jobLevel/removeBatch', params)
@@ -76,16 +76,34 @@ export default {
         return get('/system/basic/department/list', params)
     },
     departmentAdd(params) {
-        return post('/system//basic/department/add', params)
+        return post('/system/basic/department/add', params)
     },
     departmentUpdate(params) {
-        return post('/system//basic/department/update', params)
+        return post('/system/basic/department/update', params)
     },
     departmentRemove(params) {
-        return post('/system//basic/department/remove/' + params)
+        return post('/system/basic/department/remove/' + params)
     },
     // ----- 查询部门树 -----
     departmentTree() {
         return get('/system/basic/department/departmentTree')
+    },
+
+    // ----- 用户管理 -----
+    hrGet(params) {
+        return get('/system/hr/list', params)
+    },
+    hrAdd(params) {
+        return post('/system/hr/add', params)
+    },
+    hrUpdate(params) {
+        return post('/system/hr/update', params)
+    },
+    hrRemove(params) {
+        return post('/system/hr/remove/' + params)
+    },
+    // ----- 查询部门树 -----
+    hrWithRole() {
+        return get('/system/hr/departmentTree')
     },
 }
