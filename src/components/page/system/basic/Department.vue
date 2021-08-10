@@ -183,7 +183,7 @@
 </template>
 
 <script>
-import {addDateRange, copy} from "../../../utils/commonTools";
+import {addDateRange, copy} from "../../../../utils/commonTools";
 import TreeSelect from "@riophae/vue-treeselect";
 import "@riophae/vue-treeselect/dist/vue-treeselect.css";
 

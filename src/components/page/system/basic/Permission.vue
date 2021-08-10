@@ -252,7 +252,7 @@
 </template>
 
 <script>
-import {addDateRange} from "../../../utils/commonTools";
+import {addDateRange} from "../../../../utils/commonTools";
 
 export default {
   name: "Permission",

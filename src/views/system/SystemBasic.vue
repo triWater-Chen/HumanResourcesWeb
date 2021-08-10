@@ -19,11 +19,11 @@
 </template>
 
 <script>
-import Department from "../../components/page/system/Department"
-import Position from "../../components/page/system/Position"
-import JobLevel from "../../components/page/system/JobLevel"
-import RewardPenalty from "../../components/page/system/RewardPenalty";
-import Permission from "../../components/page/system/Permission";
+import Department from "../../components/page/system/basic/Department"
+import Position from "../../components/page/system/basic/Position"
+import JobLevel from "../../components/page/system/basic/JobLevel"
+import RewardPenalty from "../../components/page/system/basic/RewardPenalty";
+import Permission from "../../components/page/system/basic/Permission";
 
 export default {
   name: "SystemBasic",
