@@ -91,7 +91,7 @@
               <el-form-item label="手机号码">
                 <span>{{ props.row.phone }}</span>
               </el-form-item>
-              <el-form-item label="住宅电话">
+              <el-form-item label="座机号">
                 <span>{{ props.row.telephone }}</span>
               </el-form-item>
               <el-form-item label="联系地址">
@@ -145,6 +145,11 @@
           <template slot-scope="scope">
             <el-switch v-model="scope.row.enabled"
                        @change="handleStatus(scope.row)"
+                       v-if="scope.row.id !== 3"
+            />
+            <el-switch v-model="scope.row.enabled"
+                       disabled
+                       v-else
             />
           </template>
         </el-table-column>
@@ -156,7 +161,7 @@
           <template slot-scope="scope">
             <el-button size="small"
                        type="text"
-                       icon="el-icon-setting"
+                       icon="el-icon-s-operation"
                        @click="editRole(scope.row)"
             >
               分配角色
@@ -180,6 +185,98 @@
       </el-table>
     </div>
 
+    <el-dialog :title="title"
+               :visible.sync="dialogVisible"
+               center
+               width="550px"
+    >
+      <el-form label-width="75px"
+               ref="hrForm"
+               :model="editForm"
+               :rules="rules"
+      >
+        <el-row>
+          <el-col :span="12">
+            <el-form-item prop="username">
+              <span slot="label" class="formStyle">用户名</span>
+              <el-input v-model="editForm.username"
+                        placeholder="请输入用户名"
+                        maxlength="10"
+                        style="width: 160px;"
+              />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="昵称">
+              <el-input v-model="editForm.name"
+                        placeholder="请输入昵称"
+                        maxlength="8"
+                        style="width: 160px;"
+              />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item prop="phone">
+              <span slot="label" class="formStyle">手机号</span>
+              <el-input v-model="editForm.phone"
+                        placeholder="请输入手机号"
+                        maxlength="11"
+                        style="width: 160px;"
+              />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="座机号" prop="telephone">
+              <el-input v-model="editForm.telephone"
+                        placeholder="请输入座机号"
+                        maxlength="12"
+                        style="width: 160px;"
+              />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="地址">
+              <el-input v-model="editForm.address"
+                        placeholder="请输入联系地址"
+                        maxlength="15"
+                        style="width: 160px;"
+              />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item>
+              <el-switch v-model="editForm.enabled"
+                         active-text="启用"
+                         inactive-text="禁用"
+                         v-if="editForm.id !== 3"
+              />
+              <el-switch v-model="editForm.enabled"
+                         disabled
+                         active-text="启用"
+                         inactive-text="禁用"
+                         v-else
+              />
+            </el-form-item>
+          </el-col>
+          <el-col :span="24">
+            <el-form-item label="备注">
+              <el-input v-model="editForm.remark"
+                        placeholder="请输入备注内容"
+                        type="textarea"
+                        :autosize="{minRows: 2, maxRows: 2}"
+                        maxlength="40"
+                        show-word-limit
+                        style="width: 415px;"
+              />
+            </el-form-item>
+          </el-col>
+        </el-row>
+      </el-form>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="dialogVisible = false">取 消</el-button>
+        <el-button type="primary" @click="handleForm">确 定</el-button>
+      </span>
+    </el-dialog>
   </div>
 </template>
 
@@ -199,7 +296,29 @@ export default {
       expandKeys: [],
 
       hrs: [],
+      title: '',
       dialogVisible: false,
+
+      editForm: {
+        enabled: true,
+        name: '',
+        username: '',
+        phone: '',
+        telephone: '',
+        address: '',
+        userFace: '',
+        remark: '',
+      },
+
+      // 表单校验
+      rules: {
+        username: [{required: true, message: "用户名称不能为空", trigger: ['blur', 'change']}],
+        phone: [
+          {required: true, message: "手机号不能为空", trigger: ['blur', 'change']},
+          {pattern: /^[1](([3][0-9])|([4][5-9])|([5][0-3,5-9])|([6][5,6])|([7][0-8])|([8][0-9])|([9][1,8,9]))[0-9]{8}$/, message: "请输入正确的手机号", trigger: ['blur', 'change']}
+        ],
+        telephone: [{pattern: /^0\d{2,3}-\d{7,8}$/, message: "请输入正确的座机号", trigger: ['blur', 'change']}]
+      }
     }
   },
 
@@ -259,15 +378,71 @@ export default {
       this.dateRange = []
     },
 
+    // ----- 修改用户状态 -----
+    handleStatus(data) {
+      const text = data.enabled === true ? "启用" : "停用"
+      this.$confirm('确定要"' + text + '"用户【' + data.name + '】吗?',
+          '提示',
+          {
+            confirmButtonText: '确 定',
+            cancelButtonText: '取 消',
+            type: 'warning'
+          }).then(() => {
+            this.API.hrUpdate(data).then(res => {
+              if (res.success) {
+                this.$message.success(text + "成功")
+              }
+            })
+          }).catch(() => {
+            data.enabled = data.enabled !== true
+          })
+    },
 
-    handleStatus() {
-    },
-    showAdd() {
-    },
+
+    // ----- 进行分配角色 -----
     editRole() {
     },
-    showEdit() {
+
+    // ----- 初始化添加按钮 -----
+    showAdd() {
+      // 初始化表单数据
+      this.editForm = {enabled: true}
+      this.title = "添加部门"
+
+      this.dialogVisible = true
     },
+    // ----- 初始化修改按钮 -----
+    showEdit(data) {
+      // 初始化表单数据（浅拷贝即可）
+      Object.assign(this.editForm, data)
+      this.title = "修改部门"
+
+      this.dialogVisible = true
+    },
+    // ----- 添加、修改角色 -----
+    handleForm() {
+      this.$refs.hrForm.validate(valid => {
+        if (valid) {
+          if (this.editForm.id === undefined) {
+            // 进行添加
+
+          } else {
+            // 进行修改
+
+            this.API.hrUpdate(this.editForm).then(res => {
+              if (res.success) {
+                this.$message.success(res.message)
+                this.initHr()
+                this.dialogVisible = false
+              }
+            })
+          }
+        }
+      })
+    },
+
+
+    // ----- 删除角色 -----
     handleDelete() {
     },
 
