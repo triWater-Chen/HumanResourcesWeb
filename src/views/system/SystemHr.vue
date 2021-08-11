@@ -190,7 +190,7 @@
                center
                width="550px"
     >
-      <el-form label-width="75px"
+      <el-form label-width="70px"
                ref="hrForm"
                :model="editForm"
                :rules="rules"
@@ -198,29 +198,56 @@
         <el-row>
           <el-col :span="12">
             <el-form-item prop="username">
-              <span slot="label" class="formStyle">用户名</span>
+              <span slot="label" class="hrFormStyle">用户名</span>
               <el-input v-model="editForm.username"
                         placeholder="请输入用户名"
-                        maxlength="10"
-                        style="width: 160px;"
-              />
-            </el-form-item>
-          </el-col>
-          <el-col :span="12">
-            <el-form-item label="昵称">
-              <el-input v-model="editForm.name"
-                        placeholder="请输入昵称"
-                        maxlength="8"
+                        maxlength="12"
                         style="width: 160px;"
               />
             </el-form-item>
           </el-col>
           <el-col :span="12">
             <el-form-item prop="phone">
-              <span slot="label" class="formStyle">手机号</span>
+              <span slot="label" class="hrFormStyle">手机号</span>
               <el-input v-model="editForm.phone"
                         placeholder="请输入手机号"
                         maxlength="11"
+                        style="width: 160px;"
+              />
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row v-if="editForm.id === undefined">
+          <el-col :span="12">
+            <el-form-item prop="password">
+              <span slot="label" class="hrFormStyle">密码</span>
+              <el-input v-model="editForm.password"
+                        type="password"
+                        placeholder="请输入密码"
+                        maxlength="20"
+                        style="width: 160px;"
+              />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item prop="passwordConfirm">
+              <span slot="label" class="hrFormStyle">确认</span>
+              <el-input v-model="editForm.passwordConfirm"
+                        type="password"
+                        placeholder="请再次输入密码"
+                        maxlength="20"
+                        style="width: 160px;"
+              />
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col :span="12">
+            <el-form-item prop="name">
+              <span slot="label" class="hrFormStyle">昵称</span>
+              <el-input v-model="editForm.name"
+                        placeholder="请输入昵称"
+                        maxlength="12"
                         style="width: 160px;"
               />
             </el-form-item>
@@ -234,6 +261,8 @@
               />
             </el-form-item>
           </el-col>
+        </el-row>
+        <el-row>
           <el-col :span="12">
             <el-form-item label="地址">
               <el-input v-model="editForm.address"
@@ -258,6 +287,8 @@
               />
             </el-form-item>
           </el-col>
+        </el-row>
+        <el-row>
           <el-col :span="24">
             <el-form-item label="备注">
               <el-input v-model="editForm.remark"
@@ -286,6 +317,63 @@ import {addDateRange} from "../../utils/commonTools";
 export default {
   name: "SystemHr",
   data() {
+
+    // 表单验证
+    let checkUserName = (rule, value, callback) => {
+      if (value === '' || value === undefined) {
+        callback(new Error('请输入用户名'))
+      } else {
+        callback()
+      }
+    }
+    let checkName = (rule, value, callback) => {
+      if (value === '' || value === undefined) {
+        callback(new Error('请输入昵称'))
+      } else {
+        callback()
+      }
+    }
+    let checkPhone = (rule, value, callback) => {
+      const check = /^[1](([3][0-9])|([4][5-9])|([5][0-3,5-9])|([6][5,6])|([7][0-8])|([8][0-9])|([9][1,8,9]))[0-9]{8}$/
+      if (value === '' || value === undefined) {
+        callback(new Error('请输入手机号'))
+      } else if (!check.test(value)) {
+        callback(new Error('手机号码格式不正确'))
+      } else {
+        callback()
+      }
+    }
+    let checkTelePhone = (rule, value, callback) => {
+      const check = /^0\d{2,3}-\d{7,8}$/
+      if (!check.test(value) && value !== undefined) {
+        callback(new Error('座机号码格式不正确'))
+      } else {
+        callback()
+      }
+    }
+    let checkPassword = (rule, value, callback) => {
+      const check = /^.*(?=.{6,})(?=.*\d)(?=.*[A-Z])(?=.*[a-z])(?=.*[.!@#$%^&*? ]).*$/
+      if (value === '' || value === undefined) {
+        callback(new Error('请输入密码'))
+      } else if (!check.test(value)) {
+        callback(new Error('密码格式不正确'))
+      } else {
+        if (this.editForm.passwordConfirm !== '' || this.editForm.passwordConfirm !== undefined) {
+          this.$refs.hrForm.validateField('passwordConfirm')
+        }
+        callback()
+      }
+    }
+    let checkPasswordConfirm = (rule, value, callback) => {
+      if (value === '' || value === undefined) {
+        callback(new Error('请再次输入密码'))
+      } else if (value !== this.editForm.password) {
+        callback(new Error('两次输入密码不一致'))
+      } else {
+        callback()
+      }
+    }
+
     return {
       // 用于查询
       queryHr: {},
@@ -312,12 +400,12 @@ export default {
 
       // 表单校验
       rules: {
-        username: [{required: true, message: "用户名称不能为空", trigger: ['blur', 'change']}],
-        phone: [
-          {required: true, message: "手机号不能为空", trigger: ['blur', 'change']},
-          {pattern: /^[1](([3][0-9])|([4][5-9])|([5][0-3,5-9])|([6][5,6])|([7][0-8])|([8][0-9])|([9][1,8,9]))[0-9]{8}$/, message: "请输入正确的手机号", trigger: ['blur', 'change']}
-        ],
-        telephone: [{pattern: /^0\d{2,3}-\d{7,8}$/, message: "请输入正确的座机号", trigger: ['blur', 'change']}]
+        username: [{validator: checkUserName, trigger: ['blur', 'change']}],
+        name: [{validator: checkName, trigger: ['blur', 'change']}],
+        phone: [{validator: checkPhone, trigger: ['blur', 'change']}],
+        telephone: [{validator: checkTelePhone, trigger: ['blur', 'change']}],
+        password: [{validator: checkPassword, trigger: ['blur', 'change']}],
+        passwordConfirm: [{validator: checkPasswordConfirm, trigger: ['blur', 'change']}]
       }
     }
   },
@@ -405,8 +493,18 @@ export default {
 
     // ----- 初始化添加按钮 -----
     showAdd() {
-      // 初始化表单数据
-      this.editForm = {enabled: true}
+      // 初始化表单数据（因为用了表单校验，所以需要先定义字段）
+      this.editForm = {
+        enabled: true,
+        username: undefined,
+        phone: undefined,
+        telephone: undefined,
+        name: undefined,
+        address: undefined,
+        remark: undefined,
+        password: undefined,
+        passwordConfirm: undefined,
+      }
       this.title = "添加部门"
 
       this.dialogVisible = true
@@ -426,6 +524,15 @@ export default {
           if (this.editForm.id === undefined) {
             // 进行添加
 
+            // 删除确认密码字段
+            delete this.editForm.passwordConfirm
+            this.API.hrAdd(this.editForm).then(res => {
+              if (res.success) {
+                this.$message.success(res.message)
+                this.initHr()
+                this.dialogVisible = false
+              }
+            })
           } else {
             // 进行修改
 
@@ -466,5 +573,11 @@ export default {
   margin-right: 0;
   margin-bottom: 0;
   width: 50%;
+}
+.hrFormStyle {
+  color: #515a6e;
+  font-size: 14px;
+  font-weight: bold;
+  padding-left: 10px;
 }
 </style>
