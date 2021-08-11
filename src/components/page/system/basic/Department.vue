@@ -136,7 +136,7 @@
         <el-row>
           <el-col :span="24" v-if="editForm.parentId !== -1">
             <el-form-item style="display: flex; justify-content: center;">
-              <span slot="label" class="treeStyle">上级部门</span>
+              <span slot="label" class="formStyle">上级部门</span>
               <TreeSelect v-model="editForm.parentId"
                           :options="depTree"
                           :normalizer="normalizer"
@@ -404,8 +404,8 @@ export default {
 }
 </script>
 
-<style scoped>
-.treeStyle {
+<style>
+.formStyle {
   color: #515a6e;
   font-size: 14px;
   font-weight: bold;
