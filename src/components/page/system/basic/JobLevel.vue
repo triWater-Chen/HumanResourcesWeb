@@ -50,6 +50,7 @@
 
     <div>
       <el-table :data="levels"
+                v-loading="loading"
                 border
                 stripe
                 size="small"
@@ -164,7 +165,7 @@
       </el-form>
       <span slot="footer" class="dialog-footer">
         <el-button size="small" @click="dialogVisible = false">取 消</el-button>
-        <el-button size="small" type="primary" @click="handleEdit">确 定</el-button>
+        <el-button :loading="buttonLoading" size="small" type="primary" @click="handleEdit">确 定</el-button>
       </span>
     </el-dialog>
   </div>
@@ -175,6 +176,9 @@ export default {
   name: "JobLevel",
   data() {
     return {
+      loading: true,
+      buttonLoading: false,
+
       titleLevels: [
         '正高级',
         '副高级',
@@ -210,19 +214,25 @@ export default {
 
     // ----- 初始化数据 -----
     initJobLevel() {
+      this.loading = true
       this.API.jobLevelGet().then(res => {
         if (res.success) {
           this.levels = res.data.list
         }
+        this.loading = false
       })
     },
 
     // ----- 刷新数据 -----
     refreshJobLevel() {
+      this.loading = true
       this.API.jobLevelGet().then(res => {
         if (res.success) {
           this.levels = res.data.list
+          this.loading = false
           this.$message.success("刷新成功")
+        } else {
+          this.loading = false
         }
       })
     },
@@ -264,6 +274,8 @@ export default {
               if (res.success) {
                 this.$message.success(text + "成功")
               }
+            }).catch(() => {
+              data.enabled = data.enabled !== true
             })
           }).catch(() => {
             data.enabled = data.enabled !== true
@@ -277,11 +289,15 @@ export default {
     },
     handleEdit() {
       if (this.editPost.name) {
+        this.buttonLoading = true
         this.API.jobLevelUpdate(this.editPost).then(res => {
           if (res.success) {
+            this.buttonLoading = false
             this.$message.success(res.message)
             this.initJobLevel()
             this.dialogVisible = false
+          } else {
+            this.buttonLoading = false
           }
         })
       } else {
@@ -298,12 +314,13 @@ export default {
             cancelButtonText: '取 消',
             type: 'warning'
           }).then(() => {
+            this.loading = true
             const deleteId = []
             deleteId.push(data.id)
             this.API.jobLevelRemoveBatch(deleteId).then(res => {
               if (res.success) {
-                this.$message.success(res.message)
                 this.initJobLevel()
+                this.$message.success(res.message)
               }
             })
           }).catch(() => {})
@@ -322,10 +339,11 @@ export default {
             cancelButtonText: '取 消',
             type: 'warning'
           }).then(() => {
+            this.loading = true
             this.API.jobLevelRemoveBatch(this.ids).then(data => {
               if (data.success) {
-                this.$message.success(data.message)
                 this.initJobLevel()
+                this.$message.success(data.message)
               }
             })
       }).catch(() => {})

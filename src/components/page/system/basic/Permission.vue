@@ -84,6 +84,7 @@
       </el-row>
 
       <el-table :data="roles"
+                v-loading="loading"
                 border
                 stripe
                 size="small"
@@ -245,7 +246,7 @@
       </el-form>
       <span slot="footer" class="dialog-footer">
         <el-button size="small" @click="dialogVisible = false">取 消</el-button>
-        <el-button size="small" type="primary" @click="handleForm">确 定</el-button>
+        <el-button :loading="buttonLoading" size="small" type="primary" @click="handleForm">确 定</el-button>
       </span>
     </el-dialog>
   </div>
@@ -258,6 +259,9 @@ export default {
   name: "Permission",
   data() {
     return {
+      loading: true,
+      buttonLoading: false,
+
       multipleSelection: [],
       ids: [],
 
@@ -310,6 +314,7 @@ export default {
 
     // ----- 初始化数据 -----
     initRole() {
+      this.loading = true
       this.API.roleGet({
         params: this.queryRole
       }).then(res => {
@@ -317,6 +322,7 @@ export default {
           this.roles = res.data.list.records
           this.total = res.data.list.total
         }
+        this.loading = false
       })
     },
 
@@ -373,6 +379,7 @@ export default {
 
     // ----- 刷新数据 -----
     refreshRole() {
+      this.loading = true
       this.resetForm()
       this.API.roleGet({
         params: this.queryRole
@@ -380,7 +387,10 @@ export default {
         if (res.success) {
           this.roles = res.data.list.records
           this.total = res.data.list.total
+          this.loading = false
           this.$message.success("刷新成功")
+        } else {
+          this.loading = false
         }
       })
     },
@@ -398,6 +408,7 @@ export default {
 
     // ----- 按条件查询 -----
     handleQuery() {
+      this.loading = true
       this.queryRole.current = 1
       this.API.roleGet({
         params: addDateRange(this.queryRole, this.dateRange)
@@ -411,6 +422,7 @@ export default {
           this.total = 0
           this.$message.error(res.message)
         }
+        this.loading = false
       })
       // 重置查询条件
       this.resetForm()
@@ -430,6 +442,8 @@ export default {
               if (res.success) {
                 this.$message.success(text + "成功")
               }
+            }).catch(() => {
+              data.enabled = data.enabled !== true
             })
           }).catch(() => {
             data.enabled = data.enabled !== true
@@ -468,15 +482,19 @@ export default {
       if (this.editForm.name && this.editForm.namezh) {
         const check = /^\w{1,15}$/
         if (check.test(this.editForm.name)) {
+          this.buttonLoading = true
 
           if (this.editForm.id === undefined) {
             // 进行添加
 
             this.API.roleAddOrUpdate(this.editForm).then(res => {
               if (res.success) {
+                this.buttonLoading = false
                 this.$message.success("添加成功")
                 this.initRole()
                 this.dialogVisible = false
+              } else {
+                this.buttonLoading = false
               }
             })
           } else {
@@ -484,9 +502,12 @@ export default {
 
             this.API.roleAddOrUpdate(this.editForm).then(res => {
               if (res.success) {
+                this.buttonLoading = false
                 this.$message.success(res.message)
                 this.initRole()
                 this.dialogVisible = false
+              } else {
+                this.buttonLoading = false
               }
             })
           }
@@ -516,12 +537,13 @@ export default {
             cancelButtonText: '取 消',
             type: 'warning'
           }).then(() => {
+            this.loading = true
             const deleteId = []
             deleteId.push(data.id)
             this.API.roleRemoveBatch(deleteId).then(res => {
               if (res.success) {
-                this.$message.success(res.message)
                 this.initRole()
+                this.$message.success(res.message)
               }
             })
           }).catch(() => {})
@@ -540,10 +562,11 @@ export default {
             cancelButtonText: '取 消',
             type: 'warning'
           }).then(() => {
+            this.loading = true
             this.API.roleRemoveBatch(this.ids).then(data => {
               if (data.success) {
-                this.$message.success(data.message)
                 this.initRole()
+                this.$message.success(data.message)
               }
             })
           }).catch(() => {})

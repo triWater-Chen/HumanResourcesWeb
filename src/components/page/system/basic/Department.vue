@@ -61,6 +61,7 @@
 
     <div>
       <el-table :data="departments"
+                v-loading="loading"
                 row-key="id"
                 ref="tableRef"
                 default-expand-all
@@ -176,7 +177,7 @@
       </el-form>
       <span slot="footer" class="dialog-footer">
         <el-button size="small" @click="dialogVisible = false">取 消</el-button>
-        <el-button size="small" type="primary" @click="handleForm">确 定</el-button>
+        <el-button :loading="buttonLoading" size="small" type="primary" @click="handleForm">确 定</el-button>
       </span>
     </el-dialog>
   </div>
@@ -192,6 +193,9 @@ export default {
   components: { TreeSelect },
   data() {
     return {
+      loading: true,
+      buttonLoading: false,
+
       // 用于查询
       queryDep: {},
       dateRange: [],
@@ -223,6 +227,7 @@ export default {
 
     // ----- 初始化数据 -----
     initDepartment() {
+      this.loading = true
       // 初始化页面树
       this.API.departmentTree().then(res => {
         if (res.success) {
@@ -235,6 +240,7 @@ export default {
           // 处理下拉数据
           this.deleteChildren(this.depTreeTemp)
         }
+        this.loading = false
       })
     },
 
@@ -247,19 +253,25 @@ export default {
 
     // ----- 刷新数据 -----
     refreshDepartment() {
+      this.loading = true
       this.API.departmentTree().then(res => {
         if (res.success) {
           this.departments = res.data.tree
           this.depTreeTemp = copy(this.departments)
           this.deleteChildren(this.depTreeTemp)
 
+          this.loading = false
           this.$message.success("刷新成功")
+        } else {
+          // 不在最后直接 this.loading = false 是为了成功时，能先关闭 loading 再给出 message
+          this.loading = false
         }
       })
     },
 
     // ----- 按条件查询 -----
     handleQuery() {
+      this.loading = true
       this.API.departmentGet({
         params: addDateRange(this.queryDep, this.dateRange)
       }).then(res => {
@@ -270,6 +282,7 @@ export default {
           this.departments = []
           this.$message.error(res.message)
         }
+        this.loading = false
       })
       // 重置查询表单
       this.queryDep = {}
@@ -353,14 +366,19 @@ export default {
       } else if (!(this.editForm.sort >= 0)){
         this.$message.error("部门顺序不能为空")
       } else {
+        this.buttonLoading = true
+
         if (this.editForm.id === undefined) {
           // 进行添加
 
           this.API.departmentAdd(this.editForm).then(res => {
             if (res.success) {
+              this.buttonLoading = false
               this.$message.success(res.message)
               this.initDepartment()
               this.dialogVisible = false
+            } else {
+              this.buttonLoading = false
             }
           })
         } else {
@@ -368,9 +386,12 @@ export default {
 
           this.API.departmentUpdate(this.editForm).then(res => {
             if (res.success) {
+              this.buttonLoading = false
               this.$message.success(res.message)
               this.initDepartment()
               this.dialogVisible = false
+            } else {
+              this.buttonLoading = false
             }
           })
         }
@@ -387,10 +408,11 @@ export default {
             cancelButtonText: '取 消',
             type: 'warning'
           }).then(() => {
+            this.loading = true
             this.API.departmentRemove(data.id).then(res => {
               if (res.success) {
-                this.$message.success(res.message)
                 this.initDepartment()
+                this.$message.success(res.message)
               }
             })
           }).catch(() => {})

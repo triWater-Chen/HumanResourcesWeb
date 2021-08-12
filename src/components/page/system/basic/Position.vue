@@ -39,6 +39,7 @@
 
     <div>
       <el-table :data="positions"
+                v-loading="loading"
                 border
                 stripe
                 size="small"
@@ -128,7 +129,7 @@
       </el-form>
       <span slot="footer" class="dialog-footer">
         <el-button size="small" @click="dialogVisible = false">取 消</el-button>
-        <el-button size="small" type="primary" @click="handleEdit">确 定</el-button>
+        <el-button :loading="buttonLoading" size="small" type="primary" @click="handleEdit">确 定</el-button>
       </span>
     </el-dialog>
   </div>
@@ -139,6 +140,9 @@ export default {
   name: "Position",
   data() {
     return {
+      loading: true,
+      buttonLoading: false,
+
       // 用于添加职位
       addPosition: { name: ''},
       positions: [],
@@ -163,20 +167,26 @@ export default {
 
     // ----- 初始化数据 -----
     initPosition() {
+      this.loading = true
       this.API.positionGet()
           .then(data => {
             if (data.success) {
               this.positions = data.data.list
             }
+            this.loading = false
           })
     },
 
     // ----- 刷新数据 -----
     refreshPosition() {
+      this.loading = true
       this.API.positionGet().then(res => {
         if (res.success) {
           this.positions = res.data.list
+          this.loading = false
           this.$message.success("刷新成功")
+        } else {
+          this.loading = false
         }
       })
     },
@@ -207,14 +217,16 @@ export default {
             cancelButtonText: '取 消',
             type: 'warning'
           }).then(() => {
-        this.API.positionUpdate(data).then(res => {
-          if (res.success) {
-            this.$message.success(text + "成功")
-          }
-        })
-      }).catch(() => {
-        data.enabled = data.enabled !== true
-      })
+            this.API.positionUpdate(data).then(res => {
+              if (res.success) {
+                this.$message.success(text + "成功")
+              }
+            }).catch(() => {
+              data.enabled = data.enabled !== true
+            })
+          }).catch(() => {
+            data.enabled = data.enabled !== true
+          })
     },
 
     // ----- 编辑职位 -----
@@ -225,12 +237,16 @@ export default {
     },
     handleEdit() {
       if (this.editPost.name) {
+        this.buttonLoading = true
         this.API.positionUpdate(this.editPost).then(data => {
           if (data.success) {
+            this.buttonLoading = false
             this.$message.success(data.message)
             this.initPosition()
             this.editPost.name = ''
             this.dialogVisible = false
+          } else {
+            this.buttonLoading = false
           }
         })
       } else {
@@ -247,13 +263,14 @@ export default {
             cancelButtonText: '取 消',
             type: 'warning'
           }).then(() => {
+            this.loading = true
             // ----- 统一使用批量删除的方法 -----
             const deleteId = []
             deleteId.push(data.id);
             this.API.positionRemoveBatch(deleteId).then(data => {
               if (data.success) {
+                this.initPosition();
                     this.$message.success(data.message)
-                    this.initPosition();
                   }
             })
 
@@ -282,10 +299,11 @@ export default {
             cancelButtonText: '取 消',
             type: 'warning'
           }).then(() => {
+            this.loading = true
             this.API.positionRemoveBatch(this.ids).then(data => {
               if (data.success) {
-                this.$message.success(data.message)
                 this.initPosition();
+                this.$message.success(data.message)
               }
             })
       }).catch(() => {})
