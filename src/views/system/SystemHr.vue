@@ -217,6 +217,7 @@
             </el-form-item>
           </el-col>
         </el-row>
+        <!-- 此处不能使用 v-show，会导致出现 password 字段，引发表单校验 -->
         <el-row v-if="editForm.id === undefined">
           <el-col :span="12">
             <el-form-item prop="password">
@@ -320,8 +321,11 @@ export default {
 
     // 表单验证
     let checkUserName = (rule, value, callback) => {
+      const check = /^[A-Za-z][a-zA-Z0-9]\w{0,10}$/
       if (value === '' || value === undefined) {
         callback(new Error('请输入用户名'))
+      } else if (!check.test(value)) {
+        callback(new Error('必须以英文开头，且为英文或数字'))
       } else {
         callback()
       }
@@ -346,7 +350,11 @@ export default {
     let checkTelePhone = (rule, value, callback) => {
       const check = /^0\d{2,3}-\d{7,8}$/
       if (!check.test(value) && value !== undefined) {
-        callback(new Error('座机号码格式不正确'))
+        if (value === null || value === '') {
+          callback()
+        } else {
+          callback(new Error('座机号码格式不正确'))
+        }
       } else {
         callback()
       }
@@ -495,6 +503,7 @@ export default {
     showAdd() {
       // 初始化表单数据（因为用了表单校验，所以需要先定义字段）
       this.editForm = {
+        id: undefined,
         enabled: true,
         username: undefined,
         phone: undefined,
@@ -550,7 +559,21 @@ export default {
 
 
     // ----- 删除角色 -----
-    handleDelete() {
+    handleDelete(data) {
+      this.$confirm('此操作将永久删除用户【' + data.name + '】, 是否继续?',
+          '提示',
+          {
+            confirmButtonText: '确 定',
+            cancelButtonText: '取 消',
+            type: 'warning'
+          }).then(() => {
+            this.API.hrRemove(data.id).then(res => {
+              if (res.success) {
+                this.$message.success(res.message)
+                this.initHr()
+              }
+            })
+          }).catch(() => {})
     },
 
     // ----- 表头样式 -----
