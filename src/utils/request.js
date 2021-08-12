@@ -17,10 +17,13 @@ axios.interceptors.response.use(response => {
     if (response.status && response.status === 200 && !response.data.success) {
         // 给出后端返回的错误提示
         Message.error({message: response.data.message})
-        return
+        return response
     }
     return response
 }, error => {
+    if (error.toString() === "Error: Network Error") {
+        Message.error({message: '网络连接异常'})
+    }
 
     if (error.response.status === 504 || error.response.status === 404) {
         Message.error({message: '服务器罢工了ʅ( ´・∧・｀)ʃ '})
@@ -32,7 +35,8 @@ axios.interceptors.response.use(response => {
             {
                 confirmButtonText: '重新登录',
                 cancelButtonText: '取 消',
-                type: 'warning'
+                type: 'warning',
+                closeOnClickModal: false
             }).then(() => {
                 router.replace('/login').then()
             }).catch(() => {})
