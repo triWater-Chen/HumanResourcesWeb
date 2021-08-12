@@ -19,6 +19,7 @@
                   type="text"
                   auto-complete="off"
                   placeholder="请输入用户名"
+                  @keydown.enter.native="submitLogin"
         />
       </el-form-item>
       <el-form-item prop="password">
