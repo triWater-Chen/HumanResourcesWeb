@@ -337,10 +337,17 @@ export default {
     },
     // ----- 根据角色 id 查询其所属的菜单 -----
     getSelectedMenus(id) {
+      const treeLoading = this.$loading({
+        fullscreen: false,
+        text: '正在获取权限...',
+        background: 'rgba(255, 255, 255, 0.4)',
+        target: document.querySelector(".el-card")
+      })
       this.API.menuIdByRole(id).then(res => {
         if (res.success) {
           // 设置默认勾选的菜单
           this.$refs.tree.setCheckedKeys(res.data.list)
+          treeLoading.close()
         }
       })
     },
