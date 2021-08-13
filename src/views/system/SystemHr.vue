@@ -70,6 +70,7 @@
 
     <div>
       <el-table :data="hrs"
+                v-loading="loading"
                 stripe
                 size="small"
                 ref="hrTableRef"
@@ -79,7 +80,7 @@
                 style="font-size: 13px;"
                 :header-cell-style="myTableStyle"
       >
-        <el-table-column type="expand" fixed="left">
+        <el-table-column type="expand">
           <template slot-scope="props">
             <el-form label-position="left" inline class="tableExpand">
               <el-form-item label="用户名">
@@ -105,7 +106,6 @@
         </el-table-column>
         <el-table-column prop="username"
                          label="用户名"
-                         fixed="left"
                          sortable
                          min-width="100"
                          header-align="center"
@@ -154,18 +154,12 @@
           </template>
         </el-table-column>
         <el-table-column label="操作"
+                         fixed="right"
                          header-align="center"
                          align="center"
-                         min-width="250"
+                         min-width="180"
         >
           <template slot-scope="scope">
-            <el-button size="small"
-                       type="text"
-                       icon="el-icon-s-operation"
-                       @click="editRole(scope.row)"
-            >
-              分配角色
-            </el-button>
             <el-button size="small"
                        type="text"
                        icon="el-icon-edit"
@@ -177,9 +171,23 @@
                        type="text"
                        icon="el-icon-delete"
                        @click="handleDelete(scope.row)"
+                       v-if="scope.row.id !== 3"
             >
               删除
             </el-button>
+            <el-dropdown size="small"
+                         type="text"
+                         @command="(command) => commandHandler(command, scope.row)"
+                         class="hrDropdown"
+            >
+              <span class="el-dropdown-link">
+                <i class="el-icon-d-arrow-right el-icon--right"></i><span style="margin-left: 5px;">更多</span>
+              </span>
+              <el-dropdown-menu slot="dropdown">
+                <el-dropdown-item command="handleRole" icon="el-icon-s-operation" >分配角色</el-dropdown-item>
+                <el-dropdown-item command="handlePassword" icon="el-icon-key" >重置密码</el-dropdown-item>
+              </el-dropdown-menu>
+            </el-dropdown>
           </template>
         </el-table-column>
       </el-table>
@@ -306,7 +314,7 @@
       </el-form>
       <span slot="footer" class="dialog-footer">
         <el-button @click="dialogVisible = false">取 消</el-button>
-        <el-button type="primary" @click="handleForm">确 定</el-button>
+        <el-button :loading="buttonLoading" type="primary" @click="handleForm">确 定</el-button>
       </span>
     </el-dialog>
   </div>
@@ -383,6 +391,9 @@ export default {
     }
 
     return {
+      loading: true,
+      buttonLoading: false,
+
       // 用于查询
       queryHr: {},
       dateRange: [],
@@ -426,10 +437,12 @@ export default {
 
     // ----- 初始化数据 -----
     initHr() {
+      this.loading = true
       this.API.hrGet().then(res => {
         if (res.success) {
           this.hrs = res.data.list
         }
+        this.loading = false
       })
     },
 
@@ -448,16 +461,21 @@ export default {
 
     // ----- 刷新数据 -----
     refreshHr() {
+      this.loading = true
       this.API.hrGet().then(res => {
         if (res.success) {
           this.hrs = res.data.list
+          this.loading = false
           this.$message.success("刷新成功")
+        } else {
+          this.loading = false
         }
       })
     },
 
     // ----- 按条件查询 -----
     handleQuery() {
+      this.loading = true
       this.API.hrGet({
         params: addDateRange(this.queryHr, this.dateRange)
       }).then(res => {
@@ -468,6 +486,7 @@ export default {
           this.hrs = []
           this.$message.error(res.message)
         }
+        this.loading = false
       })
       // 重置查询表单
       this.queryHr = {}
@@ -488,16 +507,14 @@ export default {
               if (res.success) {
                 this.$message.success(text + "成功")
               }
+            }).catch(() => {
+              data.enabled = data.enabled !== true
             })
           }).catch(() => {
             data.enabled = data.enabled !== true
           })
     },
 
-
-    // ----- 进行分配角色 -----
-    editRole() {
-    },
 
     // ----- 初始化添加按钮 -----
     showAdd() {
@@ -514,7 +531,7 @@ export default {
         password: undefined,
         passwordConfirm: undefined,
       }
-      this.title = "添加部门"
+      this.title = "添加用户"
 
       this.dialogVisible = true
     },
@@ -522,43 +539,52 @@ export default {
     showEdit(data) {
       // 初始化表单数据（浅拷贝即可）
       Object.assign(this.editForm, data)
-      this.title = "修改部门"
+      this.title = "修改用户"
 
       this.dialogVisible = true
     },
-    // ----- 添加、修改角色 -----
+    // ----- 添加、修改用户 -----
     handleForm() {
       this.$refs.hrForm.validate(valid => {
         if (valid) {
+          this.buttonLoading = true
           if (this.editForm.id === undefined) {
             // 进行添加
 
             // 删除确认密码字段
             delete this.editForm.passwordConfirm
             this.API.hrAdd(this.editForm).then(res => {
+              this.buttonLoading = false
               if (res.success) {
                 this.$message.success(res.message)
                 this.initHr()
                 this.dialogVisible = false
               }
+            }).catch(() => {
+              this.buttonLoading = false
             })
           } else {
             // 进行修改
 
             this.API.hrUpdate(this.editForm).then(res => {
+              this.buttonLoading = false
               if (res.success) {
                 this.$message.success(res.message)
                 this.initHr()
                 this.dialogVisible = false
               }
+            }).catch(() => {
+              this.buttonLoading = false
             })
           }
+        } else {
+          return false
         }
       })
     },
 
 
-    // ----- 删除角色 -----
+    // ----- 删除用户 -----
     handleDelete(data) {
       this.$confirm('此操作将永久删除用户【' + data.name + '】, 是否继续?',
           '提示',
@@ -567,13 +593,58 @@ export default {
             cancelButtonText: '取 消',
             type: 'warning'
           }).then(() => {
+            this.loading = true
             this.API.hrRemove(data.id).then(res => {
               if (res.success) {
-                this.$message.success(res.message)
                 this.initHr()
+                this.$message.success(res.message)
               }
             })
           }).catch(() => {})
+    },
+
+
+    // ----- 更多操作触发 -----
+    commandHandler(param, row){
+      if (param === "handleRole") {
+        console.log(row)
+      }
+      if (param === "handlePassword") {
+        this.resetRole(row)
+      }
+    },
+    // ----- 分配角色 -----
+    // ----- 重置密码 -----
+    resetRole(data) {
+      this.$prompt('请输入用户【' + data.username + '】的新密码', "提示", {
+        confirmButtonText: "确 定",
+        cancelButtonText: "取 消",
+        closeOnClickModal: false,
+        inputPattern: /^.*(?=.{6,})(?=.*\d)(?=.*[A-Z])(?=.*[a-z])(?=.*[.!@#$%^&*? ]).*$/,
+        inputErrorMessage: "用户密码至少6位，且包含大小写字母、数字和标点符号",
+        beforeClose: ((action, instance, done) => {
+          if (action === 'confirm') {
+            instance.confirmButtonLoading = true
+            instance.confirmButtonText = '密码重置中...'
+
+            this.API.hrResetPassword({
+              id: data.id,
+              password: instance.inputValue
+            }).then(res => {
+              instance.confirmButtonLoading = false
+              if (res.success) {
+                this.$message.success(res.message)
+                done()
+              }
+            }).catch(() => {
+              instance.confirmButtonLoading = false
+              instance.confirmButtonText = '确 定'
+            })
+          } else {
+            done()
+          }
+        })
+      })
     },
 
     // ----- 表头样式 -----
@@ -602,5 +673,11 @@ export default {
   font-size: 14px;
   font-weight: bold;
   padding-left: 10px;
+}
+.hrDropdown .el-dropdown-link {
+  cursor: pointer;
+  color: #409eff;
+  font-size: 12px;
+  margin-left: 5px;
 }
 </style>

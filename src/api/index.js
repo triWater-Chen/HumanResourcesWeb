@@ -102,6 +102,9 @@ export default {
     hrRemove(params) {
         return post('/system/hr/remove/' + params)
     },
+    hrResetPassword(params) {
+        return post('/system/hr/resetPassword', params)
+    },
     // ----- 查询部门树 -----
     hrWithRole() {
         return get('/system/hr/departmentTree')
