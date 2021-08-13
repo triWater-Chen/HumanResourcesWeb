@@ -495,27 +495,29 @@ export default {
             // 进行添加
 
             this.API.roleAddOrUpdate(this.editForm).then(res => {
+              this.buttonLoading = false
               if (res.success) {
-                this.buttonLoading = false
                 this.$message.success("添加成功")
                 this.initRole()
                 this.dialogVisible = false
-              } else {
-                this.buttonLoading = false
               }
+            }).catch(() => {
+              this.buttonLoading = false
             })
           } else {
             // 进行修改
 
             this.API.roleAddOrUpdate(this.editForm).then(res => {
+              this.buttonLoading = false
               if (res.success) {
-                this.buttonLoading = false
                 this.$message.success(res.message)
                 this.initRole()
                 this.dialogVisible = false
               } else {
                 this.buttonLoading = false
               }
+            }).catch(() => {
+              this.buttonLoading = false
             })
           }
 
@@ -542,15 +544,27 @@ export default {
           {
             confirmButtonText: '确 定',
             cancelButtonText: '取 消',
-            type: 'warning'
-          }).then(() => {
-            this.loading = true
-            const deleteId = []
-            deleteId.push(data.id)
-            this.API.roleRemoveBatch(deleteId).then(res => {
-              if (res.success) {
-                this.initRole()
-                this.$message.success(res.message)
+            type: 'warning',
+            beforeClose: ((action, instance, done) => {
+              if (action === 'confirm') {
+                instance.confirmButtonLoading = true
+                instance.confirmButtonText = '删除中...'
+
+                const deleteId = []
+                deleteId.push(data.id)
+                this.API.roleRemoveBatch(deleteId).then(res => {
+                  if (res.success) {
+                    instance.confirmButtonLoading = false
+                    this.initRole()
+                    this.$message.success(res.message)
+                    done()
+                  }
+                }).catch(() => {
+                  instance.confirmButtonLoading = false
+                  instance.confirmButtonText = '确 定'
+                })
+              } else {
+                done()
               }
             })
           }).catch(() => {})
@@ -567,13 +581,25 @@ export default {
           {
             confirmButtonText: '确 定',
             cancelButtonText: '取 消',
-            type: 'warning'
-          }).then(() => {
-            this.loading = true
-            this.API.roleRemoveBatch(this.ids).then(data => {
-              if (data.success) {
-                this.initRole()
-                this.$message.success(data.message)
+            type: 'warning',
+            beforeClose: ((action, instance, done) => {
+              if (action === 'confirm') {
+                instance.confirmButtonLoading = true
+                instance.confirmButtonText = '删除中...'
+
+                this.API.roleRemoveBatch(this.ids).then(data => {
+                  if (data.success) {
+                    instance.confirmButtonLoading = false
+                    this.initRole()
+                    this.$message.success(data.message)
+                    done()
+                  }
+                }).catch(() => {
+                  instance.confirmButtonLoading = false
+                  instance.confirmButtonText = '确 定'
+                })
+              } else {
+                done()
               }
             })
           }).catch(() => {})

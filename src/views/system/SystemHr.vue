@@ -193,6 +193,20 @@
       </el-table>
     </div>
 
+    <!-- 抽屉，用于分配角色 -->
+    <el-drawer :visible.sync="drawer"
+               direction="ttb"
+               :with-header="false"
+               size="40%"
+    >
+      <el-table>
+        <el-table-column property="date" label="日期" width="150"></el-table-column>
+        <el-table-column property="name" label="姓名" width="200"></el-table-column>
+        <el-table-column property="address" label="地址"></el-table-column>
+      </el-table>
+    </el-drawer>
+
+    <!-- 对话框 -->
     <el-dialog :title="title"
                :visible.sync="dialogVisible"
                center
@@ -417,6 +431,8 @@ export default {
         remark: '',
       },
 
+      drawer: false,
+
       // 表单校验
       rules: {
         username: [{validator: checkUserName, trigger: ['blur', 'change']}],
@@ -591,13 +607,25 @@ export default {
           {
             confirmButtonText: '确 定',
             cancelButtonText: '取 消',
-            type: 'warning'
-          }).then(() => {
-            this.loading = true
-            this.API.hrRemove(data.id).then(res => {
-              if (res.success) {
-                this.initHr()
-                this.$message.success(res.message)
+            type: 'warning',
+            beforeClose: ((action, instance, done) => {
+              if (action === 'confirm') {
+                instance.confirmButtonLoading = true
+                instance.confirmButtonText = '删除中...'
+
+                this.API.hrRemove(data.id).then(res => {
+                  if (res.success) {
+                    instance.confirmButtonLoading = false
+                    this.initHr()
+                    this.$message.success(res.message)
+                    done()
+                  }
+                }).catch(() => {
+                  instance.confirmButtonLoading = false
+                  instance.confirmButtonText = '确 定'
+                })
+              } else {
+                done()
               }
             })
           }).catch(() => {})
@@ -607,7 +635,8 @@ export default {
     // ----- 更多操作触发 -----
     commandHandler(param, row){
       if (param === "handleRole") {
-        console.log(row)
+        this.drawer = true
+        console.log("分配角色")
       }
       if (param === "handlePassword") {
         this.resetRole(row)
@@ -644,7 +673,7 @@ export default {
             done()
           }
         })
-      })
+      }).catch(() => {})
     },
 
     // ----- 表头样式 -----

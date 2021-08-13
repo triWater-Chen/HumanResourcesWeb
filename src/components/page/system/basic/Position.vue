@@ -15,6 +15,7 @@
         <el-button icon="el-icon-plus"
                    size="small"
                    type="primary"
+                   :loading="addLoading"
                    style="margin-top: 5px"
                    @click="handleAdd"
         >
@@ -142,6 +143,7 @@ export default {
     return {
       loading: true,
       buttonLoading: false,
+      addLoading: false,
 
       // 用于添加职位
       addPosition: { name: ''},
@@ -194,13 +196,18 @@ export default {
     // ----- 添加职位 -----
     handleAdd() {
       if (this.addPosition.name) {
+        this.addLoading = true
         this.API.positionAdd(this.addPosition)
             .then(data => {
+              this.addLoading = false
               if (data.success) {
                 this.$message.success(data.message)
                 this.initPosition()
                 this.addPosition.name = ''
               }
+            })
+            .catch(() => {
+              this.addLoading = false
             })
       } else {
         this.$message.error("职位名称不可为空")
@@ -239,15 +246,15 @@ export default {
       if (this.editPost.name) {
         this.buttonLoading = true
         this.API.positionUpdate(this.editPost).then(data => {
+          this.buttonLoading = false
           if (data.success) {
-            this.buttonLoading = false
             this.$message.success(data.message)
             this.initPosition()
             this.editPost.name = ''
             this.dialogVisible = false
-          } else {
-            this.buttonLoading = false
           }
+        }).catch(() => {
+          this.buttonLoading = false
         })
       } else {
         this.$message.error("职位名称不可为空")
@@ -261,28 +268,38 @@ export default {
           {
             confirmButtonText: '确 定',
             cancelButtonText: '取 消',
-            type: 'warning'
-          }).then(() => {
-            this.loading = true
-            // ----- 统一使用批量删除的方法 -----
-            const deleteId = []
-            deleteId.push(data.id);
-            this.API.positionRemoveBatch(deleteId).then(data => {
-              if (data.success) {
-                this.initPosition();
-                    this.$message.success(data.message)
-                  }
-            })
+            type: 'warning',
+            beforeClose: ((action, instance, done) => {
+              if (action === 'confirm') {
+                instance.confirmButtonLoading = true
+                instance.confirmButtonText = '删除中...'
 
-            // ----- 使用单个删除的方法 -----
-            // this.API.positionRemove(data.id).then(data => {
-            //   if (data.success) {
-            //     this.$message.success(data.message)
-            //     this.initPosition();
-            //   }
-            // })
+                const deleteId = []
+                deleteId.push(data.id)
+                this.API.positionRemoveBatch(deleteId).then(res => {
+                  if (res.success) {
+                    instance.confirmButtonLoading = false
+                    this.initPosition()
+                    this.$message.success(res.message)
+                    done()
+                  }
+                }).catch(() => {
+                  instance.confirmButtonLoading = false
+                  instance.confirmButtonText = '确 定'
+                })
+              } else {
+                done()
+              }
+            })
           }).catch(() => {})
     },
+    // ----- 使用单个删除的方法 -----
+    // this.API.positionRemove(data.id).then(data => {
+    //   if (data.success) {
+    //     this.$message.success(data.message)
+    //     this.initPosition();
+    //   }
+    // })
 
     // ----- 进行批量删除 -----
     handleSelectionChange(val) {
@@ -297,16 +314,28 @@ export default {
           {
             confirmButtonText: '确 定',
             cancelButtonText: '取 消',
-            type: 'warning'
-          }).then(() => {
-            this.loading = true
-            this.API.positionRemoveBatch(this.ids).then(data => {
-              if (data.success) {
-                this.initPosition();
-                this.$message.success(data.message)
+            type: 'warning',
+            beforeClose: ((action, instance, done) => {
+              if (action === 'confirm') {
+                instance.confirmButtonLoading = true
+                instance.confirmButtonText = '删除中...'
+
+                this.API.positionRemoveBatch(this.ids).then(res => {
+                  if (res.success) {
+                    instance.confirmButtonLoading = false
+                    this.initPosition()
+                    this.$message.success(res.message)
+                    done()
+                  }
+                }).catch(() => {
+                  instance.confirmButtonLoading = false
+                  instance.confirmButtonText = '确 定'
+                })
+              } else {
+                done()
               }
             })
-      }).catch(() => {})
+          }).catch(() => {})
     },
 
     // ----- 表头样式 -----

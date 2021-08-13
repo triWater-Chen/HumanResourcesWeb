@@ -372,27 +372,27 @@ export default {
           // 进行添加
 
           this.API.departmentAdd(this.editForm).then(res => {
+            this.buttonLoading = false
             if (res.success) {
-              this.buttonLoading = false
               this.$message.success(res.message)
               this.initDepartment()
               this.dialogVisible = false
-            } else {
-              this.buttonLoading = false
             }
+          }).catch(() => {
+            this.buttonLoading = false
           })
         } else {
           // 进行修改
 
           this.API.departmentUpdate(this.editForm).then(res => {
+            this.buttonLoading = false
             if (res.success) {
-              this.buttonLoading = false
               this.$message.success(res.message)
               this.initDepartment()
               this.dialogVisible = false
-            } else {
-              this.buttonLoading = false
             }
+          }).catch(() => {
+            this.buttonLoading = false
           })
         }
       }
@@ -406,13 +406,25 @@ export default {
           {
             confirmButtonText: '确 定',
             cancelButtonText: '取 消',
-            type: 'warning'
-          }).then(() => {
-            this.loading = true
-            this.API.departmentRemove(data.id).then(res => {
-              if (res.success) {
-                this.initDepartment()
-                this.$message.success(res.message)
+            type: 'warning',
+            beforeClose: ((action, instance, done) => {
+              if (action === 'confirm') {
+                instance.confirmButtonLoading = true
+                instance.confirmButtonText = '删除中...'
+
+                this.API.departmentRemove(data.id).then(res => {
+                  if (res.success) {
+                    instance.confirmButtonLoading = false
+                    this.initDepartment()
+                    this.$message.success(res.message)
+                    done()
+                  }
+                }).catch(() => {
+                  instance.confirmButtonLoading = false
+                  instance.confirmButtonText = '确 定'
+                })
+              } else {
+                done()
               }
             })
           }).catch(() => {})
