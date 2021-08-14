@@ -157,6 +157,7 @@
                        type="text"
                        icon="el-icon-delete"
                        @click="handleDelete(scope.row)"
+                       v-if="scope.row.id !== 6"
             >
               删除
             </el-button>
