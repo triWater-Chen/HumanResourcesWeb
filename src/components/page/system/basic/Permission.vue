@@ -246,7 +246,7 @@
       </el-form>
       <span slot="footer" class="dialog-footer">
         <el-button size="small" @click="dialogVisible = false">取 消</el-button>
-        <el-button :loading="buttonLoading" size="small" type="primary" @click="handleForm">确 定</el-button>
+        <el-button :loading="buttonLoading" size="small" type="primary" @click="handleForm">{{ buttonLoading ? '提交中...' : '确 定' }}</el-button>
       </span>
     </el-dialog>
   </div>
@@ -394,11 +394,11 @@ export default {
         if (res.success) {
           this.roles = res.data.list.records
           this.total = res.data.list.total
-          this.loading = false
           this.$message.success("刷新成功")
-        } else {
-          this.loading = false
         }
+        this.loading = false
+      }).catch(() => {
+        this.loading = false
       })
     },
 
@@ -443,14 +443,27 @@ export default {
           {
             confirmButtonText: '确 定',
             cancelButtonText: '取 消',
-            type: 'warning'
-          }).then(() => {
-            this.API.roleStatus(data).then(res => {
-              if (res.success) {
-                this.$message.success(text + "成功")
+            type: 'warning',
+            beforeClose: ((action, instance, done) => {
+              if (action === 'confirm') {
+                instance.confirmButtonLoading = true
+                instance.confirmButtonText = text + '中...'
+
+                this.API.roleStatus(data).then(res => {
+                  instance.confirmButtonLoading = false
+                  if (res.success) {
+                    this.$message.success(text + "成功")
+                    done()
+                  }
+                }).catch(() => {
+                  data.enabled = data.enabled !== true
+                  instance.confirmButtonLoading = false
+                  instance.confirmButtonText = '确 定'
+                  done()
+                })
+              } else {
+                done()
               }
-            }).catch(() => {
-              data.enabled = data.enabled !== true
             })
           }).catch(() => {
             data.enabled = data.enabled !== true
@@ -553,8 +566,8 @@ export default {
                 const deleteId = []
                 deleteId.push(data.id)
                 this.API.roleRemoveBatch(deleteId).then(res => {
+                  instance.confirmButtonLoading = false
                   if (res.success) {
-                    instance.confirmButtonLoading = false
                     this.initRole()
                     this.$message.success(res.message)
                     done()
@@ -588,8 +601,8 @@ export default {
                 instance.confirmButtonText = '删除中...'
 
                 this.API.roleRemoveBatch(this.ids).then(data => {
+                  instance.confirmButtonLoading = false
                   if (data.success) {
-                    instance.confirmButtonLoading = false
                     this.initRole()
                     this.$message.success(data.message)
                     done()

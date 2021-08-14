@@ -166,7 +166,7 @@
       </el-form>
       <span slot="footer" class="dialog-footer">
         <el-button size="small" @click="dialogVisible = false">取 消</el-button>
-        <el-button :loading="buttonLoading" size="small" type="primary" @click="handleEdit">确 定</el-button>
+        <el-button :loading="buttonLoading" size="small" type="primary" @click="handleEdit">{{ buttonLoading ? '提交中...' : '确 定' }}</el-button>
       </span>
     </el-dialog>
   </div>
@@ -231,11 +231,11 @@ export default {
       this.API.jobLevelGet().then(res => {
         if (res.success) {
           this.levels = res.data.list
-          this.loading = false
           this.$message.success("刷新成功")
-        } else {
-          this.loading = false
         }
+        this.loading = false
+      }).catch(() => {
+        this.loading = false
       })
     },
 
@@ -274,14 +274,27 @@ export default {
           {
             confirmButtonText: '确 定',
             cancelButtonText: '取 消',
-            type: 'warning'
-          }).then(() => {
-            this.API.jobLevelUpdate(data).then(res => {
-              if (res.success) {
-                this.$message.success(text + "成功")
+            type: 'warning',
+            beforeClose: ((action, instance, done) => {
+              if (action === 'confirm') {
+                instance.confirmButtonLoading = true
+                instance.confirmButtonText = text + '中...'
+
+                this.API.jobLevelUpdate(data).then(res => {
+                  instance.confirmButtonLoading = false
+                  if (res.success) {
+                    this.$message.success(text + "成功")
+                    done()
+                  }
+                }).catch(() => {
+                  data.enabled = data.enabled !== true
+                  instance.confirmButtonLoading = false
+                  instance.confirmButtonText = '确 定'
+                  done()
+                })
+              } else {
+                done()
               }
-            }).catch(() => {
-              data.enabled = data.enabled !== true
             })
           }).catch(() => {
             data.enabled = data.enabled !== true

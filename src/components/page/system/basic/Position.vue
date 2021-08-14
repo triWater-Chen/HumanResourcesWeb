@@ -19,7 +19,7 @@
                    style="margin-top: 5px"
                    @click="handleAdd"
         >
-          添加
+          {{ addLoading ? '添加中...' : '添 加' }}
         </el-button>
         <el-button type="danger"
                    size="small"
@@ -130,7 +130,7 @@
       </el-form>
       <span slot="footer" class="dialog-footer">
         <el-button size="small" @click="dialogVisible = false">取 消</el-button>
-        <el-button :loading="buttonLoading" size="small" type="primary" @click="handleEdit">确 定</el-button>
+        <el-button :loading="buttonLoading" size="small" type="primary" @click="handleEdit">{{ buttonLoading ? '提交中...' : '确 定' }}</el-button>
       </span>
     </el-dialog>
   </div>
@@ -185,11 +185,11 @@ export default {
       this.API.positionGet().then(res => {
         if (res.success) {
           this.positions = res.data.list
-          this.loading = false
           this.$message.success("刷新成功")
-        } else {
-          this.loading = false
         }
+        this.loading = false
+      }).catch(() => {
+        this.loading = false
       })
     },
 
@@ -222,14 +222,27 @@ export default {
           {
             confirmButtonText: '确 定',
             cancelButtonText: '取 消',
-            type: 'warning'
-          }).then(() => {
-            this.API.positionUpdate(data).then(res => {
-              if (res.success) {
-                this.$message.success(text + "成功")
+            type: 'warning',
+            beforeClose: ((action, instance, done) => {
+              if (action === 'confirm') {
+                instance.confirmButtonLoading = true
+                instance.confirmButtonText = text + '中...'
+
+                this.API.positionUpdate(data).then(res => {
+                  instance.confirmButtonLoading = false
+                  if (res.success) {
+                    this.$message.success(text + "成功")
+                    done()
+                  }
+                }).catch(() => {
+                  data.enabled = data.enabled !== true
+                  instance.confirmButtonLoading = false
+                  instance.confirmButtonText = '确 定'
+                  done()
+                })
+              } else {
+                done()
               }
-            }).catch(() => {
-              data.enabled = data.enabled !== true
             })
           }).catch(() => {
             data.enabled = data.enabled !== true
@@ -277,8 +290,8 @@ export default {
                 const deleteId = []
                 deleteId.push(data.id)
                 this.API.positionRemoveBatch(deleteId).then(res => {
+                  instance.confirmButtonLoading = false
                   if (res.success) {
-                    instance.confirmButtonLoading = false
                     this.initPosition()
                     this.$message.success(res.message)
                     done()
@@ -321,8 +334,8 @@ export default {
                 instance.confirmButtonText = '删除中...'
 
                 this.API.positionRemoveBatch(this.ids).then(res => {
+                  instance.confirmButtonLoading = false
                   if (res.success) {
-                    instance.confirmButtonLoading = false
                     this.initPosition()
                     this.$message.success(res.message)
                     done()

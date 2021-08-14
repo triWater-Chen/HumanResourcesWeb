@@ -177,7 +177,7 @@
       </el-form>
       <span slot="footer" class="dialog-footer">
         <el-button size="small" @click="dialogVisible = false">取 消</el-button>
-        <el-button :loading="buttonLoading" size="small" type="primary" @click="handleForm">确 定</el-button>
+        <el-button :loading="buttonLoading" size="small" type="primary" @click="handleForm">{{ buttonLoading ? '提交中...' : '确 定' }}</el-button>
       </span>
     </el-dialog>
   </div>
@@ -260,12 +260,11 @@ export default {
           this.depTreeTemp = copy(this.departments)
           this.deleteChildren(this.depTreeTemp)
 
-          this.loading = false
           this.$message.success("刷新成功")
-        } else {
-          // 不在最后直接 this.loading = false 是为了成功时，能先关闭 loading 再给出 message
-          this.loading = false
         }
+        this.loading = false
+      }).catch(() => {
+        this.loading = false
       })
     },
 
@@ -413,8 +412,8 @@ export default {
                 instance.confirmButtonText = '删除中...'
 
                 this.API.departmentRemove(data.id).then(res => {
+                  instance.confirmButtonLoading = false
                   if (res.success) {
-                    instance.confirmButtonLoading = false
                     this.initDepartment()
                     this.$message.success(res.message)
                     done()
