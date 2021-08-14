@@ -196,8 +196,8 @@
     <!-- 自定义抽屉组件，用于分配角色 -->
     <AssignRoles :hr-info="hrInfo"
                  :visible="drawer"
-                 :hr-tags-with-role="hrTagsWithRole"
                  :roles-table="rolesTable"
+                 :default-id="defaultId"
                  @close="drawerClose"
     />
     <!-- 对话框 -->
@@ -322,7 +322,7 @@
       </el-form>
       <span slot="footer" class="dialog-footer">
         <el-button @click="dialogVisible = false">取 消</el-button>
-        <el-button :loading="buttonLoading" type="primary" @click="handleForm">确 定</el-button>
+        <el-button :loading="buttonLoading" type="primary" @click="handleForm">{{ buttonLoading ? '提交中...' : '确 定' }}</el-button>
       </span>
     </el-dialog>
   </div>
@@ -429,8 +429,8 @@ export default {
 
       drawer: false,
       hrInfo: [],
-      hrTagsWithRole: [],
       rolesTable: [],
+      defaultId: [],
 
       // 表单校验
       rules: {
@@ -480,11 +480,11 @@ export default {
       this.API.hrGet().then(res => {
         if (res.success) {
           this.hrs = res.data.list
-          this.loading = false
           this.$message.success("刷新成功")
-        } else {
-          this.loading = false
         }
+        this.loading = false
+      }).catch(() => {
+        this.loading = false
       })
     },
 
@@ -502,6 +502,8 @@ export default {
           this.$message.error(res.message)
         }
         this.loading = false
+      }).catch(() => {
+        this.loading = false
       })
       // 重置查询表单
       this.queryHr = {}
@@ -516,14 +518,27 @@ export default {
           {
             confirmButtonText: '确 定',
             cancelButtonText: '取 消',
-            type: 'warning'
-          }).then(() => {
-            this.API.hrUpdate(data).then(res => {
-              if (res.success) {
-                this.$message.success(text + "成功")
+            type: 'warning',
+            beforeClose: ((action, instance, done) => {
+              if (action === 'confirm') {
+                instance.confirmButtonLoading = true
+                instance.confirmButtonText = text + '中...'
+
+                this.API.hrUpdate(data).then(res => {
+                  instance.confirmButtonLoading = false
+                  if (res.success) {
+                    this.$message.success(text + "成功")
+                    done()
+                  }
+                }).catch(() => {
+                  data.enabled = data.enabled !== true
+                  instance.confirmButtonLoading = false
+                  instance.confirmButtonText = '确 定'
+                  done()
+                })
+              } else {
+                done()
               }
-            }).catch(() => {
-              data.enabled = data.enabled !== true
             })
           }).catch(() => {
             data.enabled = data.enabled !== true
@@ -613,8 +628,8 @@ export default {
                 instance.confirmButtonText = '删除中...'
 
                 this.API.hrRemove(data.id).then(res => {
+                  instance.confirmButtonLoading = false
                   if (res.success) {
-                    instance.confirmButtonLoading = false
                     this.initHr()
                     this.$message.success(res.message)
                     done()
@@ -645,6 +660,7 @@ export default {
     resetRole(data) {
       this.drawer = true
       this.hrInfo = {
+        id: data.id,
         username: data.username,
         name: data.name
       }
@@ -686,21 +702,41 @@ export default {
 
     // ----- 关闭 drawer -----
     drawerClose() {
-      this.hrTagsWithRole = []
+      this.defaultId = []
       this.drawer = false
     },
     // ----- 根据 id 查询该用户所拥有的角色 -----
     getHrWithRole(id) {
       const tagLoading = this.$loading({
         fullscreen: false,
-        text: '正在获取角色...',
+        text: '正在获取详情...',
         background: 'rgba(255, 255, 255, 0.4)',
         target: document.querySelector(".hrTags")
       })
       this.API.hrWithRole(id).then(res => {
         if (res.success) {
-          this.hrTagsWithRole = res.data.roles
+          // 整合默认勾选角色
+          res.data.roles.forEach(item => {
+            this.defaultId.push(item.id)
+          })
+
+          // 获取所有角色
+          this.getAllEnabledRoles()
           tagLoading.close()
+        }
+      })
+    },
+    // ----- 查询所有可用角色 -----
+    getAllEnabledRoles() {
+      const queryRole = {
+        current: 1,
+        size: 100
+      }
+      this.API.roleGet({
+        params: queryRole
+      }).then(res => {
+        if (res.success) {
+          this.rolesTable = res.data.list.records
         }
       })
     },

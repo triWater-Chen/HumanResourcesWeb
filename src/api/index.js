@@ -66,7 +66,7 @@ export default {
     menuTree() {
         return get('/system/basic/role/menuTree')
     },
-    // ----- 查询所有菜单 -----
+    // ----- 查询某个角色的所有菜单 -----
     menuIdByRole(params) {
         return get('/system/basic/role/menuByRole/' + params)
     },
@@ -105,8 +105,12 @@ export default {
     hrResetPassword(params) {
         return post('/system/hr/resetPassword', params)
     },
-    // ----- 查询部门树 -----
-    hrWithRole() {
-        return get('/system/hr/departmentTree')
+    // ----- 根据 id 查询所属所有角色 -----
+    hrWithRole(params) {
+        return get('/system/hr/hrWithRole/' + params)
+    },
+    // ----- 根据 id 更新所属所有角色 -----
+    hrUpdateByRole(params) {
+        return post('/system/hr/hrUpdateByRole', params)
     },
 }
