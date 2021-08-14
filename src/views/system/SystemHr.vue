@@ -193,19 +193,13 @@
       </el-table>
     </div>
 
-    <!-- 抽屉，用于分配角色 -->
-    <el-drawer :visible.sync="drawer"
-               direction="ttb"
-               :with-header="false"
-               size="40%"
-    >
-      <el-table>
-        <el-table-column property="date" label="日期" width="150"></el-table-column>
-        <el-table-column property="name" label="姓名" width="200"></el-table-column>
-        <el-table-column property="address" label="地址"></el-table-column>
-      </el-table>
-    </el-drawer>
-
+    <!-- 自定义抽屉组件，用于分配角色 -->
+    <AssignRoles :hr-info="hrInfo"
+                 :visible="drawer"
+                 :hr-tags-with-role="hrTagsWithRole"
+                 :roles-table="rolesTable"
+                 @close="drawerClose"
+    />
     <!-- 对话框 -->
     <el-dialog :title="title"
                :visible.sync="dialogVisible"
@@ -336,9 +330,11 @@
 
 <script>
 import {addDateRange} from "../../utils/commonTools";
+import AssignRoles from "../../components/page/system/Others/AssignRoles";
 
 export default {
   name: "SystemHr",
+  components: {AssignRoles},
   data() {
 
     // 表单验证
@@ -432,6 +428,9 @@ export default {
       },
 
       drawer: false,
+      hrInfo: [],
+      hrTagsWithRole: [],
+      rolesTable: [],
 
       // 表单校验
       rules: {
@@ -635,16 +634,25 @@ export default {
     // ----- 更多操作触发 -----
     commandHandler(param, row){
       if (param === "handleRole") {
-        this.drawer = true
-        console.log("分配角色")
+        // 进行分配角色
+        this.resetRole(row)
       }
       if (param === "handlePassword") {
-        this.resetRole(row)
+        this.resetPassword(row)
       }
     },
     // ----- 分配角色 -----
-    // ----- 重置密码 -----
     resetRole(data) {
+      this.drawer = true
+      this.hrInfo = {
+        username: data.username,
+        name: data.name
+      }
+      this.getHrWithRole(data.id)
+
+    },
+    // ----- 重置密码 -----
+    resetPassword(data) {
       this.$prompt('请输入用户【' + data.username + '】的新密码', "提示", {
         confirmButtonText: "确 定",
         cancelButtonText: "取 消",
@@ -674,6 +682,27 @@ export default {
           }
         })
       }).catch(() => {})
+    },
+
+    // ----- 关闭 drawer -----
+    drawerClose() {
+      this.hrTagsWithRole = []
+      this.drawer = false
+    },
+    // ----- 根据 id 查询该用户所拥有的角色 -----
+    getHrWithRole(id) {
+      const tagLoading = this.$loading({
+        fullscreen: false,
+        text: '正在获取角色...',
+        background: 'rgba(255, 255, 255, 0.4)',
+        target: document.querySelector(".hrTags")
+      })
+      this.API.hrWithRole(id).then(res => {
+        if (res.success) {
+          this.hrTagsWithRole = res.data.roles
+          tagLoading.close()
+        }
+      })
     },
 
     // ----- 表头样式 -----
