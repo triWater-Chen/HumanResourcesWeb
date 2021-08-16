@@ -87,13 +87,13 @@ export default {
         if (valid) {
           this.loading = true
           this.API.login(this.loginForm).then(res => {
+            this.loading = false
             if (res.success) {
-              this.loading = false
               this.SessionStorage.set("USER", res)
               this.$router.replace('/')
-            } else {
-              this.loading = false
             }
+          }).catch(() => {
+            this.loading = false
           })
         } else {
           return false

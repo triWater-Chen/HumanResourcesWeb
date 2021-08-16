@@ -23,9 +23,9 @@ axios.interceptors.response.use(response => {
 }, error => {
     if (error.toString() === "Error: Network Error") {
         Message.error({message: '网络连接异常'})
-    }
-
-    if (error.response.status === 504 || error.response.status === 404) {
+    } else if (error.toString().includes("timeout")) {
+        Message.error({message: '请求超时'})
+    } else if (error.response.status === 504 || error.response.status === 404) {
         Message.error({message: '服务器罢工了ʅ( ´・∧・｀)ʃ '})
     } else if (error.response.status === 403) {
         Message.error({message: '权限不足，请联系管理员'})
