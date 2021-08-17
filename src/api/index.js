@@ -113,4 +113,18 @@ export default {
     hrUpdateByRole(params) {
         return post('/system/hr/hrUpdateByRole', params)
     },
+
+    // ----- 员工管理 -----
+    employeeGet(params) {
+        return get('/personnel/emp/list', params)
+    },
+    employeeAdd(params) {
+        return post('/personnel/emp/add', params)
+    },
+    employeeUpdate(params) {
+        return post('/personnel/emp/update', params)
+    },
+    employeeRemove(params) {
+        return post('/personnel/emp/remove/' + params)
+    },
 }
