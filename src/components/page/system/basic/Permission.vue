@@ -271,6 +271,7 @@ export default {
         current: 1,
         size: 6,
       },
+      pageSize: 0,
       dateRange: [],
 
       title: '',
@@ -322,6 +323,7 @@ export default {
         if (res.success) {
           this.roles = res.data.list.records
           this.total = res.data.list.total
+          this.pageSize = res.data.list.records.length
         }
         this.loading = false
       })
@@ -395,6 +397,7 @@ export default {
         if (res.success) {
           this.roles = res.data.list.records
           this.total = res.data.list.total
+          this.pageSize = res.data.list.records.length
           this.$message.success("刷新成功")
         }
         this.loading = false
@@ -424,10 +427,12 @@ export default {
         if (res.code === 200) {
           this.roles = res.data.list.records
           this.total = res.data.list.total
+          this.pageSize = res.data.list.records.length
           this.$message.success(res.message)
         } else if (res.code === 500) {
           this.roles = []
           this.total = 0
+          this.pageSize = 0
           this.$message.error(res.message)
         }
         this.loading = false
@@ -569,6 +574,11 @@ export default {
                 this.API.roleRemoveBatch(deleteId).then(res => {
                   instance.confirmButtonLoading = false
                   if (res.success) {
+
+                    // 判断删除后该页是否还有数据
+                    if (!(this.pageSize - 1 > 0)) {
+                      this.queryRole.current = this.queryRole.current - 1
+                    }
                     this.initRole()
                     this.$message.success(res.message)
                     done()
@@ -604,6 +614,11 @@ export default {
                 this.API.roleRemoveBatch(this.ids).then(data => {
                   instance.confirmButtonLoading = false
                   if (data.success) {
+
+                    // 判断删除后该页是否还有数据
+                    if (!(this.pageSize - this.ids.length > 0)) {
+                      this.queryRole.current = this.queryRole.current - 1
+                    }
                     this.initRole()
                     this.$message.success(data.message)
                     done()
