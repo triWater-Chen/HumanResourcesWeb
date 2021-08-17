@@ -119,7 +119,15 @@
                        type="text"
                        icon="el-icon-delete"
                        @click="handleDelete(scope.row)"
-                       v-if="scope.row.parentId !== -1"
+                       v-if="scope.row.children === null"
+            >
+              删除
+            </el-button>
+            <el-button size="small"
+                       type="text"
+                       icon="el-icon-delete"
+                       v-else
+                       disabled
             >
               删除
             </el-button>
