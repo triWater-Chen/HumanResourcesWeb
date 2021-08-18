@@ -25,26 +25,23 @@
           />
         </el-select>
       </el-form-item>
-      <el-form-item>
-        <span slot="label" class="employeeQueryStyle">所属部门</span>
-        <el-select v-model="queryEmployee.departmentId"
-                   placeholder="请选择部门"
-                   clearable
-                   size="small"
-                   style="width: 200px;"
-        >
-          <el-option v-for="department in departments"
-                     :key="department.id"
-                     :label="department.name"
-                     :value="department.id"
-          />
-        </el-select>
+      <el-form-item class="editTree">
+        <span slot="label" class="employeeQueryStyle">部门</span>
+        <TreeSelect v-model="queryEmployee.departmentId"
+                    :options="departments"
+                    :default-expand-level="2"
+                    :normalizer="normalizer"
+                    :clearable="true"
+                    placeholder="请选择部门"
+                    style="width: 188px; line-height: 34px; margin-top: 3px"
+        />
       </el-form-item>
       <el-form-item>
         <el-button icon="el-icon-search"
                    type="primary"
                    size="small"
                    @click="handleQuery"
+                   style="margin-left: 12px"
         >
           查询
         </el-button>
@@ -175,21 +172,22 @@
           />
           <el-table-column prop="nation.name"
                            label="民族"
-                           min-width="60"
+                           show-overflow-tooltip
+                           min-width="80"
                            header-align="center"
                            align="center"
           />
           <el-table-column prop="nativePlace"
                            label="籍贯"
                            show-overflow-tooltip
-                           min-width="80"
+                           min-width="100"
                            header-align="center"
                            align="center"
           />
           <el-table-column prop="politicsStatus.name"
                            label="政治面貌"
                            show-overflow-tooltip
-                           min-width="90"
+                           min-width="100"
                            header-align="center"
                            align="center"
           />
@@ -275,6 +273,16 @@
           >
             <template slot-scope="scope">
               <el-tag>{{scope.row.contractTerm}}</el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column label="在职状态"
+                           min-width="80"
+                           header-align="center"
+                           align="center"
+          >
+            <template slot-scope="scope">
+              <el-tag type="success" v-if="scope.row.workState === '在职'">{{scope.row.workState}}</el-tag>
+              <el-tag type="info" v-else>{{scope.row.workState}}</el-tag>
             </template>
           </el-table-column>
           <el-table-column label="操作"
@@ -446,10 +454,10 @@
                            placeholder="政治面貌"
                            style="width: 180px;"
                 >
-                  <el-option v-for="politic in politicStatus"
-                             :key="politic.id"
-                             :label="politic.name"
-                             :value="politic.id"
+                  <el-option v-for="politics in politicsStatus"
+                             :key="politics.id"
+                             :label="politics.name"
+                             :value="politics.id"
                   />
                 </el-select>
               </el-form-item>
@@ -518,21 +526,18 @@
 
           <el-divider content-position="left">入司情况：</el-divider>
 
-          <el-row>
+          <el-row class="editTree">
             <el-col :span="12">
               <el-form-item prop="departmentId">
                 <span slot="label" class="employeeFormStyle">部门</span>
-                <el-select v-model="editForm.departmentId"
-                           size="small"
-                           placeholder="请选择部门"
-                           style="width: 180px;"
-                >
-                  <el-option v-for="department in departments"
-                             :key="department.id"
-                             :label="department.name"
-                             :value="department.id"
-                  />
-                </el-select>
+                <TreeSelect v-model="editForm.departmentId"
+                            :options="departments"
+                            :default-expand-level="2"
+                            :clearable="true"
+                            :normalizer="normalizer"
+                            placeholder="请选择部门"
+                            style="width: 168px; margin-top: 5px; line-height: 34px;"
+                />
               </el-form-item>
             </el-col>
             <el-col :span="12">
@@ -547,6 +552,7 @@
                              :key="position.id"
                              :label="position.name"
                              :value="position.id"
+                             :disabled="!position.enabled"
                   />
                 </el-select>
               </el-form-item>
@@ -565,6 +571,7 @@
                              :key="jobLevel.id"
                              :label="jobLevel.name"
                              :value="jobLevel.id"
+                             :disabled="!jobLevel.enabled"
                   />
                 </el-select>
               </el-form-item>
@@ -658,10 +665,6 @@
                              :value="workState"
                   />
                 </el-select>
-<!--                <el-radio-group v-model="editForm.workState">-->
-<!--                  <el-radio label="在职">在职</el-radio>-->
-<!--                  <el-radio label="离职">离职</el-radio>-->
-<!--                </el-radio-group>-->
               </el-form-item>
             </el-col>
           </el-row>
@@ -672,7 +675,7 @@
         <el-form>
           <el-form-item style="text-align: center; margin-top: 5px;">
             <el-button @click="drawer = false" style="width: 150px">返 回</el-button>
-            <el-button :loading="loading" type="primary" @click="handleSubmit" style="width: 150px">
+            <el-button :loading="buttonLoading" type="primary" @click="handleSubmit" style="width: 150px">
               {{ loading ? '提交中...' : '提 交' }}
             </el-button>
           </el-form-item>
@@ -683,12 +686,16 @@
 </template>
 
 <script>
+import TreeSelect from "@riophae/vue-treeselect";
+import "@riophae/vue-treeselect/dist/vue-treeselect.css";
+
 export default {
   name: "PersonnelEmp",
+  components: { TreeSelect },
   data() {
     return {
-
       loading: false,
+      buttonLoading: false,
 
       total: 0,
       queryEmployee: {
@@ -700,7 +707,7 @@ export default {
       departments: [],
       positions: [],
       nations: [],
-      politicStatus: [],
+      politicsStatus: [],
       jobLevels: [],
       degrees: ['本科', '大专', '硕士', '博士', '高中', '初中', '小学', '其他'],
       workStates: ['在职', '离职'],
@@ -747,7 +754,9 @@ export default {
   },
 
   mounted() {
+    this.initVarData()
     this.initEmployee()
+    this.initDefaultData()
   },
 
   methods: {
@@ -764,6 +773,63 @@ export default {
           this.pageSize = res.data.list.records.length
         }
         this.loading = false
+      })
+    },
+    // ----- 不常改变，能存入 session 的数据 -----
+    initDefaultData() {
+      if (!this.SessionStorage.get("nations")) {
+        this.API.employeeOfNations().then(res => {
+          if (res.success) {
+            this.nations = res.data.nations
+            this.SessionStorage.set("nations", res.data.nations)
+          }
+        })
+      } else {
+        this.nations = this.SessionStorage.get("nations")
+      }
+      if (!this.SessionStorage.get("politicsStatus")) {
+        this.API.employeeOfPoliticsStatus().then(res => {
+          if (res.success) {
+            this.politicsStatus = res.data.politicsStatus
+            this.SessionStorage.set("politicsStatus", res.data.politicsStatus)
+          }
+        })
+      } else {
+        this.politicsStatus = this.SessionStorage.get("politicsStatus")
+      }
+    },
+    // ----- 常改变，刷新页面重新获取的数据 -----
+    initVarData() {
+      this.API.employeeOfPositions().then(res => {
+        if (res.success) {
+          this.positions = res.data.positions
+        }
+      })
+      this.API.employeeOfJobLevels().then(res => {
+        if (res.success) {
+          this.jobLevels = res.data.jobLevels
+        }
+      })
+      this.API.employeeOfDepartments().then(res => {
+        if (res.success) {
+          this.departments = res.data.departments
+          this.deleteChildren(this.departments)
+        }
+      })
+    },
+
+    // ----- 处理部门树 -----
+    normalizer(node) {
+      return {
+        id: node.id,
+        label: node.name,
+        children: node.children
+      }
+    },
+    // ----- 递归删除值为 null 的 children -----
+    deleteChildren(data) {
+      data.forEach(item => {
+        item.children === null ? delete item.children : this.deleteChildren(item.children)
       })
     },
 
@@ -889,5 +955,11 @@ export default {
   font-size: 14px;
   font-weight: bold;
   padding-left: 10px;
+}
+.editTree .vue-treeselect__menu {
+  overflow-x: scroll !important;
+}
+.editTree .vue-treeselect div, .vue-treeselect span {
+  box-sizing: content-box;
 }
 </style>

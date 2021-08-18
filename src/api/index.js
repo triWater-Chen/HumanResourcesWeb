@@ -127,4 +127,20 @@ export default {
     employeeRemove(params) {
         return post('/personnel/emp/remove/' + params)
     },
+    // ----- 获取下拉表数据 -----
+    employeeOfNations() {
+        return get('/personnel/emp/nations')
+    },
+    employeeOfPoliticsStatus() {
+        return get('/personnel/emp/politicsStatus')
+    },
+    employeeOfJobLevels() {
+        return get('/personnel/emp/jobLevels')
+    },
+    employeeOfPositions() {
+        return get('/personnel/emp/positions')
+    },
+    employeeOfDepartments() {
+        return get('/personnel/emp/departments')
+    },
 }
