@@ -30,9 +30,10 @@
         <TreeSelect v-model="queryEmployee.departmentId"
                     :options="departments"
                     :default-expand-level="2"
-                    :normalizer="normalizer"
+                    :normalizer="normalizerQuery"
+                    noResultsText="未查询到相关部门"
                     :clearable="true"
-                    placeholder="请选择部门"
+                    placeholder="请输入关键字"
                     style="width: 188px; line-height: 34px; margin-top: 3px"
         />
       </el-form-item>
@@ -535,7 +536,8 @@
                             :default-expand-level="2"
                             :clearable="true"
                             :normalizer="normalizer"
-                            placeholder="请选择部门"
+                            noResultsText="未查询到相关部门"
+                            placeholder="请输入关键字"
                             style="width: 168px; margin-top: 5px; line-height: 34px;"
                 />
               </el-form-item>
@@ -577,15 +579,19 @@
               </el-form-item>
             </el-col>
             <el-col :span="12">
-              <el-form-item prop="beginDate">
-                <span slot="label" class="employeeFormStyle">入职日期</span>
-                <el-date-picker  v-model="editForm.beginDate"
-                                 size="small"
-                                 type="date"
-                                 value-format="yyyy-MM-dd"
-                                 style="width: 180px;"
-                                 placeholder="入职日期"
-                />
+              <el-form-item prop="workState">
+                <span slot="label" class="employeeFormStyle">在职状态</span>
+                <el-select v-model="editForm.workState"
+                           size="small"
+                           style="width: 180px;"
+                           :disabled="title === '添加员工'"
+                >
+                  <el-option v-for="workState in workStates"
+                             :key="workState"
+                             :label="workState"
+                             :value="workState"
+                  />
+                </el-select>
               </el-form-item>
             </el-col>
           </el-row>
@@ -642,31 +648,13 @@
             </el-col>
           </el-row>
           <el-row>
-            <el-col :span="15">
-              <el-form-item prop="engageForm">
-                <span slot="label" class="employeeFormStyle">聘用形式</span>
-                <el-radio-group v-model="editForm.engageForm">
-                  <el-radio label="劳动合同">劳动合同</el-radio>
-                  <el-radio label="劳务合同">劳务合同</el-radio>
-                </el-radio-group>
-              </el-form-item>
-            </el-col>
-            <el-col :span="9">
-              <el-form-item prop="workState">
-                <span slot="label" class="employeeFormStyle">在职状态</span>
-                <el-select v-model="editForm.workState"
-                           size="small"
-                           style="width: 115px;"
-                           :disabled="title === '添加员工'"
-                >
-                  <el-option v-for="workState in workStates"
-                             :key="workState"
-                             :label="workState"
-                             :value="workState"
-                  />
-                </el-select>
-              </el-form-item>
-            </el-col>
+            <el-form-item prop="engageForm">
+              <span slot="label" class="employeeFormStyle">聘用形式</span>
+              <el-radio-group v-model="editForm.engageForm">
+                <el-radio label="劳动合同">劳动合同</el-radio>
+                <el-radio label="劳务合同">劳务合同</el-radio>
+              </el-radio-group>
+            </el-form-item>
           </el-row>
           <el-row>
           </el-row>
@@ -676,7 +664,7 @@
           <el-form-item style="text-align: center; margin-top: 5px;">
             <el-button @click="drawer = false" style="width: 150px">返 回</el-button>
             <el-button :loading="buttonLoading" type="primary" @click="handleSubmit" style="width: 150px">
-              {{ loading ? '提交中...' : '提 交' }}
+              {{ buttonLoading ? '提交中...' : '提 交' }}
             </el-button>
           </el-form-item>
         </el-form>
@@ -693,6 +681,172 @@ export default {
   name: "PersonnelEmp",
   components: { TreeSelect },
   data() {
+
+    // 表单验证
+    let checkName = (rule, value, callback) => {
+      if (value === '' || value === undefined) {
+        callback(new Error('请输入员工名'))
+      } else {
+        callback()
+      }
+    }
+    let checkGender = (rule, value, callback) => {
+      if (value === '' || value === undefined) {
+        callback(new Error('请选择性别'))
+      } else {
+        callback()
+      }
+    }
+    let checkNativePlace = (rule, value, callback) => {
+      if (value === '' || value === undefined) {
+        callback(new Error('请输入籍贯'))
+      } else {
+        callback()
+      }
+    }
+    let checkNationId = (rule, value, callback) => {
+      if (value === '' || value === undefined) {
+        callback(new Error('请选择民族'))
+      } else {
+        callback()
+      }
+    }
+    let checkEmail = (rule, value, callback) => {
+      const check = /^[A-Za-z\d]+([-_.][A-Za-z\d]+)*@([A-Za-z\d]+[-.])+[A-Za-z\d]{2,4}$/
+      if (value === '' || value === undefined) {
+        callback(new Error('请输入邮箱'))
+      } else if (!check.test(value)) {
+        callback(new Error('邮箱格式不正确'))
+      } else {
+        callback()
+      }
+    }
+    let checkPhone = (rule, value, callback) => {
+      const check = /^[1](([3][0-9])|([4][5-9])|([5][0-3,5-9])|([6][5,6])|([7][0-8])|([8][0-9])|([9][1,8,9]))[0-9]{8}$/
+      if (value === '' || value === undefined) {
+        callback(new Error('请输入手机号'))
+      } else if (!check.test(value)) {
+        callback(new Error('手机号码格式不正确'))
+      } else {
+        callback()
+      }
+    }
+    let checkBirthday = (rule, value, callback) => {
+      if (value === '' || value === undefined) {
+        callback(new Error('请选择出生日期'))
+      } else {
+        callback()
+      }
+    }
+    let checkIdCard = (rule, value, callback) => {
+      const check = /(^[1-9]\d{5}(18|19|([23]\d))\d{2}((0[1-9])|(10|11|12))(([0-2][1-9])|10|20|30|31)\d{3}[0-9Xx]$)|(^[1-9]\d{5}\d{2}((0[1-9])|(10|11|12))(([0-2][1-9])|10|20|30|31)\d{2}$)/
+      if (value === '' || value === undefined) {
+        callback(new Error('请输入身份证号'))
+      } else if (!check.test(value)) {
+        callback(new Error('身份证号格式不正确'))
+      } else {
+        callback()
+      }
+    }
+    let checkPoliticId = (rule, value, callback) => {
+      if (value === '' || value === undefined) {
+        callback(new Error('请选择政治面貌'))
+      } else {
+        callback()
+      }
+    }
+    let checkTiptopDegree = (rule, value, callback) => {
+      if (value === '' || value === undefined) {
+        callback(new Error('请选择最高学历'))
+      } else {
+        callback()
+      }
+    }
+    let checkSchool = (rule, value, callback) => {
+      if (value === '' || value === undefined) {
+        callback(new Error('请输入毕业院校'))
+      } else {
+        callback()
+      }
+    }
+    let checkSpecialty = (rule, value, callback) => {
+      if (value === '' || value === undefined) {
+        callback(new Error('请输入所属专业'))
+      } else {
+        callback()
+      }
+    }
+    let checkWedlock = (rule, value, callback) => {
+      if (value === '' || value === undefined) {
+        callback(new Error('请选择婚姻状况'))
+      } else {
+        callback()
+      }
+    }
+    let checkAddress = (rule, value, callback) => {
+      if (value === '' || value === undefined) {
+        callback(new Error('请输入联系地址'))
+      } else {
+        callback()
+      }
+    }
+    let checkDepartmentId = (rule, value, callback) => {
+      if (value === '' || value === undefined) {
+        callback(new Error('请选择部门'))
+      } else {
+        callback()
+      }
+    }
+    let checkPositionId = (rule, value, callback) => {
+      if (value === '' || value === undefined) {
+        callback(new Error('请选择职位'))
+      } else {
+        callback()
+      }
+    }
+    let checkJobLevelId = (rule, value, callback) => {
+      if (value === '' || value === undefined) {
+        callback(new Error('请选择职称'))
+      } else {
+        callback()
+      }
+    }
+    let checkBeginDate = (rule, value, callback) => {
+      if (value === '' || value === undefined) {
+        callback(new Error('请选择入职日期'))
+      } else {
+        callback()
+      }
+    }
+    let checkConversionTime = (rule, value, callback) => {
+      if (value === '' || value === undefined) {
+        callback(new Error('请选择转正日期'))
+      } else {
+        callback()
+      }
+    }
+    let checkBeginContract = (rule, value, callback) => {
+      if (value === '' || value === undefined) {
+        callback(new Error('请选择合同起始日期'))
+      } else {
+        callback()
+      }
+    }
+    let checkEndContract = (rule, value, callback) => {
+      if (value === '' || value === undefined) {
+        callback(new Error('请选择合同终止日期'))
+      } else {
+        callback()
+      }
+    }
+    let checkEngageForm = (rule, value, callback) => {
+      if (value === '' || value === undefined) {
+        callback(new Error('请选择聘用形式'))
+      } else {
+        callback()
+      }
+    }
+
     return {
       loading: false,
       buttonLoading: false,
@@ -709,7 +863,7 @@ export default {
       nations: [],
       politicsStatus: [],
       jobLevels: [],
-      degrees: ['本科', '大专', '硕士', '博士', '高中', '初中', '小学', '其他'],
+      degrees: ['博士', '硕士', '本科', '大专', '高中', '初中', '小学', '其他'],
       workStates: ['在职', '离职'],
 
       multipleSelection: [],
@@ -749,12 +903,34 @@ export default {
         workAge: ''
       },
 
-      rules: {},
+      rules: {
+        name: [{validator: checkName, trigger: ['blur', 'change']}],
+        gender: [{validator: checkGender, trigger: ['blur', 'change']}],
+        nativePlace: [{validator: checkNativePlace, trigger: ['blur', 'change']}],
+        nationId: [{validator: checkNationId, trigger: ['blur', 'change']}],
+        email: [{validator: checkEmail, trigger: ['blur', 'change']}],
+        phone: [{validator: checkPhone, trigger: ['blur', 'change']}],
+        birthday: [{validator: checkBirthday, trigger: ['blur', 'change']}],
+        idCard: [{validator: checkIdCard, trigger: ['blur', 'change']}],
+        politicId: [{validator: checkPoliticId, trigger: ['blur', 'change']}],
+        tiptopDegree: [{validator: checkTiptopDegree, trigger: ['blur', 'change']}],
+        school: [{validator: checkSchool, trigger: ['blur', 'change']}],
+        specialty: [{validator: checkSpecialty, trigger: ['blur', 'change']}],
+        wedlock: [{validator: checkWedlock, trigger: ['blur', 'change']}],
+        address: [{validator: checkAddress, trigger: ['blur', 'change']}],
+        departmentId: [{validator: checkDepartmentId, trigger: ['blur', 'change']}],
+        posId: [{validator: checkPositionId, trigger: ['blur', 'change']}],
+        jobLevelId: [{validator: checkJobLevelId, trigger: ['blur', 'change']}],
+        beginDate: [{validator: checkBeginDate, trigger: ['blur', 'change']}],
+        conversionTime: [{validator: checkConversionTime, trigger: ['blur', 'change']}],
+        beginContract: [{validator: checkBeginContract, trigger: ['blur', 'change']}],
+        endContract: [{validator: checkEndContract, trigger: ['blur', 'change']}],
+        engageForm: [{validator: checkEngageForm, trigger: ['blur', 'change']}],
+      },
     }
   },
 
   mounted() {
-    this.initVarData()
     this.initEmployee()
     this.initDefaultData()
   },
@@ -764,6 +940,7 @@ export default {
     // ----- 初始化数据 -----
     initEmployee() {
       this.loading = true
+      this.initVarData()
       this.API.employeeGet({
         params: this.queryEmployee
       }).then(res => {
@@ -819,11 +996,19 @@ export default {
     },
 
     // ----- 处理部门树 -----
+    normalizerQuery(node) {
+      return {
+        id: node.id,
+        label: node.name,
+        children: node.children,
+      }
+    },
     normalizer(node) {
       return {
         id: node.id,
         label: node.name,
-        children: node.children
+        children: node.children,
+        isDisabled: !node.enabled
       }
     },
     // ----- 递归删除值为 null 的 children -----
@@ -856,6 +1041,7 @@ export default {
     refreshHr() {
       this.loading = true
       this.resetForm()
+      this.initVarData()
       this.API.employeeGet({
         params: this.queryEmployee
       }).then(res => {
@@ -872,7 +1058,29 @@ export default {
     },
 
     // ----- 按条件查询 -----
-    handleQuery() {},
+    handleQuery() {
+      this.loading = true
+      this.API.employeeGet({
+        params: this.queryEmployee
+      }).then(res => {
+        if (res.code === 200) {
+          this.employees = res.data.list.records
+          this.total = res.data.list.total
+          this.pageSize = res.data.list.records.length
+          this.$message.success(res.message)
+        } else if (res.code === 500) {
+          this.employees = []
+          this.total = 0
+          this.pageSize = 0
+          this.$message.error(res.message)
+        }
+        this.loading = false
+      }).catch(() => {
+        this.loading = false
+      })
+      // 重置查询表单
+      this.resetForm()
+    },
 
     // ----- 初始化添加按钮 -----
     handleAdd() {
@@ -918,8 +1126,47 @@ export default {
 
       this.drawer = true
     },
-    beforeClose(done) {done()},
-    handleSubmit() {},
+    // ----- 进行添加、修改员工 -----
+    handleSubmit() {
+      this.$refs.employeeForm.validate(valid => {
+        if (valid) {
+          this.buttonLoading = true
+          if (this.editForm.id === undefined) {
+            // 进行添加
+
+            this.API.employeeAdd(this.editForm).then(res => {
+              this.buttonLoading = false
+              if (res.success) {
+                this.$message.success(res.message)
+                this.initEmployee()
+                this.drawer = false
+              }
+            }).catch(() => {
+              this.buttonLoading = false
+            })
+          } else {
+            // 进行修改
+
+            this.drawer = false
+          }
+        } else {
+          return false
+        }
+      })
+      this.buttonLoading = false
+    },
+    // ----- 关闭 drawer 之前进行提示 -----
+    beforeClose(done) {
+      this.$confirm('还有未保存的工作哦，确定关闭吗',
+          '提示',
+          {
+            confirmButtonText: '确 定',
+            cancelButtonText: '取 消',
+            type: 'warning'
+          }).then(() => {
+            done()
+          }).catch(() => {})
+    },
 
     handleDelete() {},
     deleteBatch() {},
