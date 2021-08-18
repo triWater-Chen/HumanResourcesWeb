@@ -2,27 +2,36 @@
  * 将后端传入的菜单转换后，添加到 router、存入 store
  */
 import api from "../api"
+import {resetRouter} from "../router";
+import {SessionStorage} from "./sessionStorage";
 
 export const saveMenu = (router, store) => {
+    SessionStorage.set("menuLoading", true)
 
     // 若 store 中已存入，则返回
-    if (store.state.myRoutes.length > 0)
+    if (store.state.myRoutes.length > 0) {
+        SessionStorage.set("menuLoading", false)
         return
+    }
 
-    api.getMenu()
-        .then(data => {
-            if (data.success) {
+    api.getMenu().then(data => {
+        if (data.success) {
+            // 先重置，再添加
+            resetRouter()
 
-                // 将 component 从 String 类型改为对象
-                let finalRoutes = formatComponent(data.data.menus)
+            // 将 component 从 String 类型改为对象
+            let finalRoutes = formatComponent(data.data.menus)
 
-                // 将转换后的数据添加到 router 中，并存入 store
-                for (let i = 0; i < finalRoutes.length; i++) {
-                    router.addRoute(finalRoutes[i])
-                }
-                store.commit('saveRoutes', finalRoutes)
+            // 将转换后的数据添加到 router 中，并存入 store
+            for (let i = 0; i < finalRoutes.length; i++) {
+                router.addRoute(finalRoutes[i])
             }
-        })
+            store.commit('saveRoutes', finalRoutes)
+            SessionStorage.set("menuLoading", false)
+        }
+    }).catch(() => {
+        SessionStorage.set("menuLoading", false)
+    })
 }
 
 /**
