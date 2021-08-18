@@ -22,8 +22,8 @@ export default {
   data() {
     return {
       user: {
-        userFace: 'http://bpic.588ku.com/element_pic/01/40/00/64573ce2edc0728.jpg',
-        name: 'AAA'
+        userFace: this.SessionStorage.get("USER").userFace,
+        name: this.SessionStorage.get("USER").username
       }
     }
   },

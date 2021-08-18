@@ -89,7 +89,7 @@ export default {
           this.API.login(this.loginForm).then(res => {
             this.loading = false
             if (res.success) {
-              this.SessionStorage.set("USER", res)
+              this.SessionStorage.set("USER", res.data.user)
               this.$router.replace('/')
             }
           }).catch(() => {
