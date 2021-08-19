@@ -1,6 +1,6 @@
 <template>
   <div class="permissionStyle">
-    <el-form :inline="true">
+    <el-form :inline="true" v-show="showQuery">
       <el-form-item>
         <el-input size="small"
                   v-model="queryRole.name"
@@ -50,6 +50,14 @@
           搜索
         </el-button>
       </el-form-item>
+      <el-form-item>
+        <el-button icon="el-icon-refresh"
+                   size="small"
+                   @click="refreshRole"
+        >
+          重置
+        </el-button>
+      </el-form-item>
     </el-form>
 
     <div>
@@ -78,6 +86,22 @@
                        circle
                        size="mini"
                        @click="refreshRole"
+            />
+          </el-tooltip>
+        </el-col>
+        <el-col :span="1.5">
+          <el-tooltip effect="dark" content="隐藏搜索栏" placement="top"  v-show="showQuery">
+            <el-button icon="el-icon-zoom-out"
+                       circle
+                       size="mini"
+                       @click="showQuery = false"
+            />
+          </el-tooltip>
+          <el-tooltip effect="dark" content="显示搜索栏" placement="top"  v-show="!showQuery">
+            <el-button icon="el-icon-zoom-in"
+                       circle
+                       size="mini"
+                       @click="showQuery = true"
             />
           </el-tooltip>
         </el-col>
@@ -170,7 +194,7 @@
       <el-pagination background
                      layout="total, sizes, prev, pager, next, jumper"
                      :page-sizes="[6, 10, 100]"
-                     :page-size="6"
+                     :page-size="queryRole.size ? queryRole.size : 6"
                      :total="total"
                      :current-page="queryRole.current"
                      @size-change="handleSizeChange"
@@ -254,12 +278,14 @@
 </template>
 
 <script>
+
 import {addDateRange} from "../../../../utils/commonTools";
 
 export default {
   name: "Permission",
   data() {
     return {
+      showQuery: true,
       loading: true,
       buttonLoading: false,
 
@@ -318,12 +344,17 @@ export default {
     initRole() {
       this.loading = true
       this.API.roleGet({
-        params: this.queryRole
+        params: addDateRange(this.queryRole, this.dateRange)
       }).then(res => {
-        if (res.success) {
+        if (res.code === 200) {
           this.roles = res.data.list.records
           this.total = res.data.list.total
           this.pageSize = res.data.list.records.length
+        } else if (res.code === 500) {
+          this.roles = []
+          this.total = 0
+          this.pageSize = 0
+          this.$message.error(res.message)
         }
         this.loading = false
       })
@@ -420,7 +451,9 @@ export default {
     // ----- 按条件查询 -----
     handleQuery() {
       this.loading = true
+      // 重置分页
       this.queryRole.current = 1
+
       this.API.roleGet({
         params: addDateRange(this.queryRole, this.dateRange)
       }).then(res => {
@@ -437,8 +470,6 @@ export default {
         }
         this.loading = false
       })
-      // 重置查询条件
-      this.resetForm()
     },
 
     // ----- 修改角色状态 -----
@@ -517,6 +548,7 @@ export default {
               this.buttonLoading = false
               if (res.success) {
                 this.$message.success("添加成功")
+                this.resetForm()
                 this.initRole()
                 this.dialogVisible = false
               }
@@ -577,7 +609,7 @@ export default {
 
                     // 判断删除后该页是否还有数据
                     if (!(this.pageSize - 1 > 0)) {
-                      this.queryRole.current = this.queryRole.current - 1
+                      this.queryRole.current = this.queryRole.current - 1 ? this.queryRole.current : 1
                     }
                     this.initRole()
                     this.$message.success(res.message)
@@ -617,7 +649,7 @@ export default {
 
                     // 判断删除后该页是否还有数据
                     if (!(this.pageSize - this.ids.length > 0)) {
-                      this.queryRole.current = this.queryRole.current - 1
+                      this.queryRole.current = this.queryRole.current - 1 ? this.queryRole.current : 1
                     }
                     this.initRole()
                     this.$message.success(data.message)

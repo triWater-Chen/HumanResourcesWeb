@@ -238,7 +238,7 @@ export default {
       this.loading = true
       // 初始化页面树
       this.API.departmentTree().then(res => {
-        if (res.success) {
+        if (res.code === 200) {
           this.departments = res.data.tree
 
           // 使用深拷贝，将树存起来，用于赋值给下拉树
@@ -247,6 +247,9 @@ export default {
           this.depTreeTemp = copy(this.departments)
           // 处理下拉数据
           this.deleteChildren(this.depTreeTemp)
+        } else if (res.code === 500) {
+          this.departments = []
+          this.$message.error(res.message)
         }
         this.loading = false
       })
