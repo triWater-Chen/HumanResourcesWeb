@@ -16,6 +16,10 @@ export default {
     getMenu() {
         return get('/system/menu')
     },
+    // 下载文件
+    downloadFile(params) {
+        window.open('/cl/system/download?fileName=' + params + '&delete=true', '_parent')
+    },
 
     // ----- 职位管理 -----
     positionGet() {
@@ -143,4 +147,8 @@ export default {
     employeeOfDepartments() {
         return get('/personnel/emp/departments')
     },
+    // ----- Excel 相关 -----
+    employeeExport(params) {
+        return get('/personnel/emp/export', params)
+    }
 }

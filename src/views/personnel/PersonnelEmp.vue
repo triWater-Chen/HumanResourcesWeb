@@ -1,6 +1,6 @@
 <template>
   <div>
-    <el-form :inline="true">
+    <el-form :inline="true" v-show="showQuery">
       <el-form-item>
         <span slot="label" class="employeeQueryStyle">员工名</span>
         <el-input size="small"
@@ -47,6 +47,14 @@
           查询
         </el-button>
       </el-form-item>
+      <el-form-item>
+        <el-button icon="el-icon-refresh"
+                   size="small"
+                   @click="refreshEmployee"
+        >
+          重置
+        </el-button>
+      </el-form-item>
     </el-form>
 
     <div>
@@ -86,6 +94,7 @@
                      icon="el-icon-download"
                      size="mini"
                      plain
+                     @click="empExport"
           >
             导出
           </el-button>
@@ -95,7 +104,23 @@
             <el-button icon="el-icon-refresh"
                        circle
                        size="mini"
-                       @click="refreshHr"
+                       @click="refreshEmployee"
+            />
+          </el-tooltip>
+        </el-col>
+        <el-col :span="1.5">
+          <el-tooltip effect="dark" content="隐藏搜索栏" placement="top"  v-show="showQuery">
+            <el-button icon="el-icon-zoom-out"
+                       circle
+                       size="mini"
+                       @click="showQuery = false"
+            />
+          </el-tooltip>
+          <el-tooltip effect="dark" content="显示搜索栏" placement="top"  v-show="!showQuery">
+            <el-button icon="el-icon-zoom-in"
+                       circle
+                       size="mini"
+                       @click="showQuery = true"
             />
           </el-tooltip>
         </el-col>
@@ -317,8 +342,8 @@
     <div class="paginationStyle">
       <el-pagination background
                      layout="total, sizes, prev, pager, next, jumper"
-                     :page-sizes="[10, 12, 50, 100]"
-                     :page-size="12"
+                     :page-sizes="[5, 12, 50, 100]"
+                     :page-size="queryEmployee.size ? queryEmployee.size : 12"
                      :total="total"
                      :current-page="queryEmployee.current"
                      @size-change="handleSizeChange"
@@ -848,6 +873,7 @@ export default {
     }
 
     return {
+      showQuery: true,
       loading: false,
       buttonLoading: false,
 
@@ -944,10 +970,15 @@ export default {
       this.API.employeeGet({
         params: this.queryEmployee
       }).then(res => {
-        if (res.success) {
+        if (res.code === 200) {
           this.employees = res.data.list.records
           this.total = res.data.list.total
           this.pageSize = res.data.list.records.length
+        } else if (res.code === 500) {
+          this.employees = []
+          this.total = 0
+          this.pageSize = 0
+          this.$message.error(res.message)
         }
         this.loading = false
       })
@@ -1038,7 +1069,7 @@ export default {
     },
 
     // ----- 刷新数据 -----
-    refreshHr() {
+    refreshEmployee() {
       this.loading = true
       this.resetForm()
       this.initVarData()
@@ -1060,6 +1091,9 @@ export default {
     // ----- 按条件查询 -----
     handleQuery() {
       this.loading = true
+      // 重置分页
+      this.queryEmployee.current = 1
+
       this.API.employeeGet({
         params: this.queryEmployee
       }).then(res => {
@@ -1078,8 +1112,6 @@ export default {
       }).catch(() => {
         this.loading = false
       })
-      // 重置查询表单
-      this.resetForm()
     },
 
 
@@ -1139,6 +1171,7 @@ export default {
               this.buttonLoading = false
               if (res.success) {
                 this.$message.success(res.message)
+                this.resetForm()
                 this.initEmployee()
                 this.drawer = false
               }
@@ -1199,7 +1232,7 @@ export default {
 
                     // 判断删除后该页是否还有数据
                     if (!(this.pageSize - 1 > 0)) {
-                      this.queryEmployee.current = this.queryEmployee.current - 1
+                      this.queryEmployee.current = this.queryEmployee.current - 1 ? this.queryEmployee.current : 1
                     }
                     this.initEmployee()
                     this.$message.success(res.message)
@@ -1239,10 +1272,42 @@ export default {
 
                     // 判断删除后该页是否还有数据
                     if (!(this.pageSize - this.ids.length > 0)) {
-                      this.queryEmployee.current = this.queryEmployee.current - 1
+                      this.queryEmployee.current = this.queryEmployee.current - 1 ? this.queryEmployee.current : 1
                     }
                     this.initEmployee()
                     this.$message.success(data.message)
+                    done()
+                  }
+                }).catch(() => {
+                  instance.confirmButtonLoading = false
+                  instance.confirmButtonText = '确 定'
+                })
+              } else {
+                done()
+              }
+            })
+          }).catch(() => {})
+    },
+
+    // ----- Excel 处理 -----
+    empExport() {
+      this.$confirm('是否确定导出所有角色数据?',
+          '提示',
+          {
+            confirmButtonText: '确 定',
+            cancelButtonText: '取 消',
+            type: 'warning',
+            beforeClose: ((action, instance, done) => {
+              if (action === 'confirm') {
+                instance.confirmButtonLoading = true
+                instance.confirmButtonText = '导出中，请稍等...'
+
+                this.API.employeeExport({
+                  params: this.queryEmployee
+                }).then(data => {
+                  instance.confirmButtonLoading = false
+                  if (data.success) {
+                    this.API.downloadFile(encodeURI(data.message))
                     done()
                   }
                 }).catch(() => {
