@@ -664,7 +664,7 @@
           <el-form-item style="text-align: center; margin-top: 5px;">
             <el-button @click="drawer = false" style="width: 150px">返 回</el-button>
             <el-button :loading="buttonLoading" type="primary" @click="handleSubmit" style="width: 150px">
-              {{ buttonLoading ? '提交中...' : '提 交' }}
+              {{ buttonLoading === true ? '提交中...' : '提 交' }}
             </el-button>
           </el-form-item>
         </el-form>
@@ -1082,6 +1082,7 @@ export default {
       this.resetForm()
     },
 
+
     // ----- 初始化添加按钮 -----
     handleAdd() {
       // 初始化表单数据（因为用了表单校验，所以需要先定义字段）
@@ -1147,13 +1148,21 @@ export default {
           } else {
             // 进行修改
 
-            this.drawer = false
+            this.API.employeeUpdate(this.editForm).then(res => {
+              this.buttonLoading = false
+              if (res.success) {
+                this.$message.success(res.message)
+                this.initEmployee()
+                this.drawer = false
+              }
+            }).catch(() => {
+              this.buttonLoading = false
+            })
           }
         } else {
           return false
         }
       })
-      this.buttonLoading = false
     },
     // ----- 关闭 drawer 之前进行提示 -----
     beforeClose(done) {
@@ -1168,9 +1177,84 @@ export default {
           }).catch(() => {})
     },
 
-    handleDelete() {},
-    deleteBatch() {},
-    handleSelectionChange() {},
+
+    // ----- 删除员工 -----
+    handleDelete(data) {
+      this.$confirm('此操作将永久删除员工【' + data.name + '】, 是否继续?',
+          '提示',
+          {
+            confirmButtonText: '确 定',
+            cancelButtonText: '取 消',
+            type: 'warning',
+            beforeClose: ((action, instance, done) => {
+              if (action === 'confirm') {
+                instance.confirmButtonLoading = true
+                instance.confirmButtonText = '删除中...'
+
+                const deleteId = []
+                deleteId.push(data.id)
+                this.API.employeeRemoveBatch(deleteId).then(res => {
+                  instance.confirmButtonLoading = false
+                  if (res.success) {
+
+                    // 判断删除后该页是否还有数据
+                    if (!(this.pageSize - 1 > 0)) {
+                      this.queryEmployee.current = this.queryEmployee.current - 1
+                    }
+                    this.initEmployee()
+                    this.$message.success(res.message)
+                    done()
+                  }
+                }).catch(() => {
+                  instance.confirmButtonLoading = false
+                  instance.confirmButtonText = '确 定'
+                })
+              } else {
+                done()
+              }
+            })
+          }).catch(() => {})
+    },
+    handleSelectionChange(val) {
+      // 传入选中的值
+      this.multipleSelection = val
+      // 遍历选中的值，将 id 存入一个集合中
+      this.ids = val.map(item => item.id)
+    },
+    deleteBatch() {
+      this.$confirm('此操作将永久删除这 ' + this.ids.length + ' 位员工, 是否继续?',
+          '提示',
+          {
+            confirmButtonText: '确 定',
+            cancelButtonText: '取 消',
+            type: 'warning',
+            beforeClose: ((action, instance, done) => {
+              if (action === 'confirm') {
+                instance.confirmButtonLoading = true
+                instance.confirmButtonText = '删除中...'
+
+                this.API.employeeRemoveBatch(this.ids).then(data => {
+                  instance.confirmButtonLoading = false
+                  if (data.success) {
+
+                    // 判断删除后该页是否还有数据
+                    if (!(this.pageSize - this.ids.length > 0)) {
+                      this.queryEmployee.current = this.queryEmployee.current - 1
+                    }
+                    this.initEmployee()
+                    this.$message.success(data.message)
+                    done()
+                  }
+                }).catch(() => {
+                  instance.confirmButtonLoading = false
+                  instance.confirmButtonText = '确 定'
+                })
+              } else {
+                done()
+              }
+            })
+          }).catch(() => {})
+    },
 
     // ----- 表头样式 -----
     myTableStyle() {

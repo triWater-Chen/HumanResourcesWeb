@@ -124,8 +124,8 @@ export default {
     employeeUpdate(params) {
         return post('/personnel/emp/update', params)
     },
-    employeeRemove(params) {
-        return post('/personnel/emp/remove/' + params)
+    employeeRemoveBatch(params) {
+        return post('/personnel/emp/removeBatch', params)
     },
     // ----- 获取下拉表数据 -----
     employeeOfNations() {
