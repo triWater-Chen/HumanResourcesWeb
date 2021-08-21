@@ -85,6 +85,7 @@
                      icon="el-icon-upload2"
                      size="mini"
                      plain
+                     @click="upload.open = true"
           >
             导入
           </el-button>
@@ -94,19 +95,11 @@
                      icon="el-icon-download"
                      size="mini"
                      plain
+                     :loading="exportLoading"
                      @click="empExport"
           >
-            导出
+            {{ exportLoading === true ? '导出中' : '导出' }}
           </el-button>
-        </el-col>
-        <el-col :span="1.5">
-          <el-tooltip effect="dark" content="刷新" placement="top">
-            <el-button icon="el-icon-refresh"
-                       circle
-                       size="mini"
-                       @click="refreshEmployee"
-            />
-          </el-tooltip>
         </el-col>
         <el-col :span="1.5">
           <el-tooltip effect="dark" content="隐藏搜索栏" placement="top"  v-show="showQuery">
@@ -121,6 +114,15 @@
                        circle
                        size="mini"
                        @click="showQuery = true"
+            />
+          </el-tooltip>
+        </el-col>
+        <el-col :span="1.5">
+          <el-tooltip effect="dark" content="刷新" placement="top">
+            <el-button icon="el-icon-refresh"
+                       circle
+                       size="mini"
+                       @click="refreshEmployee"
             />
           </el-tooltip>
         </el-col>
@@ -149,6 +151,12 @@
                            header-align="center"
                            align="center"
                            sortable
+          />
+          <el-table-column prop="id"
+                           label="编号"
+                           min-width="60"
+                           header-align="center"
+                           align="center"
           />
           <el-table-column prop="workId"
                            label="工号"
@@ -695,6 +703,47 @@
         </el-form>
       </div>
     </el-drawer>
+
+    <!-- 员工导入对话框 -->
+    <el-dialog title="员工导入"
+               :visible.sync="upload.open"
+               width="400px"
+               append-to-body
+    >
+      <el-upload ref="upload"
+                 :limit="1"
+                 accept=".xlsx, .xls"
+                 :headers="upload.headers"
+                 :action="upload.url + '?updateSupport=' + upload.updateSupport"
+                 :on-progress="handleFileUploadProgress"
+                 :on-success="handleFileSuccess"
+                 :auto-upload="false"
+                 drag
+      >
+        <i class="el-icon-upload"/>
+        <div class="el-upload__text">
+          将文件拖到此处，或
+          <em>点击上传</em>
+        </div>
+        <div class="el-upload__tip" slot="tip" style="text-align: center">
+          <el-checkbox v-model="upload.updateSupport">更新已经存在的用户数据</el-checkbox>
+        </div>
+        <div class="el-upload__tip" slot="tip" style="text-align: center">
+          仅允许导入 xls、xlsx 格式文件
+          <el-link type="primary"
+                   :underline="false"
+                   style="font-size:12px"
+                   @click="importTemplate"
+          >
+            下载模板
+          </el-link>
+        </div>
+      </el-upload>
+      <div slot="footer" class="dialog-footer">
+        <el-button type="primary" @click="submitFileForm">确 定</el-button>
+        <el-button @click="upload.open = false">取 消</el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
@@ -952,6 +1001,19 @@ export default {
         beginContract: [{validator: checkBeginContract, trigger: ['blur', 'change']}],
         endContract: [{validator: checkEndContract, trigger: ['blur', 'change']}],
         engageForm: [{validator: checkEngageForm, trigger: ['blur', 'change']}],
+      },
+
+      exportLoading: false,
+      // 员工导入参数
+      upload: {
+        // 是否显示弹出层（员工导入）
+        open: false,
+        // 是否禁用上传
+        isUploading: false,
+        // 是否更新已经存在的用户数据
+        updateSupport: 0,
+        // 上传的地址
+        url: "/cl/personnel/emp/import"
       },
     }
   },
@@ -1289,36 +1351,47 @@ export default {
           }).catch(() => {})
     },
 
-    // ----- Excel 处理 -----
+    // ----- 导出 Excel -----
     empExport() {
-      this.$confirm('是否确定导出所有角色数据?',
+      this.$confirm('是否确定导出当前员工数据?',
           '提示',
           {
             confirmButtonText: '确 定',
             cancelButtonText: '取 消',
-            type: 'warning',
-            beforeClose: ((action, instance, done) => {
-              if (action === 'confirm') {
-                instance.confirmButtonLoading = true
-                instance.confirmButtonText = '导出中，请稍等...'
+            type: 'warning'
+          }
+      ).then(() => {
+        this.exportLoading = true
+        return this.API.employeeExport({params: this.queryEmployee})
+      }).then(data => {
+        if (data.success) {
+          this.API.downloadFile(encodeURI(data.message))
+          this.exportLoading = false
+        }
+      }).catch(() => {
+        this.exportLoading = false
+      })
+    },
+    // ----- 导出默认模板 -----
+    importTemplate() {
+      // TODO
+    },
 
-                this.API.employeeExport({
-                  params: this.queryEmployee
-                }).then(data => {
-                  instance.confirmButtonLoading = false
-                  if (data.success) {
-                    this.API.downloadFile(encodeURI(data.message))
-                    done()
-                  }
-                }).catch(() => {
-                  instance.confirmButtonLoading = false
-                  instance.confirmButtonText = '确 定'
-                })
-              } else {
-                done()
-              }
-            })
-          }).catch(() => {})
+    // ----- 文件上传中禁用按钮 -----
+    handleFileUploadProgress() {
+      this.upload.isUploading = true
+    },
+    // ----- 文件上传成功处理 -----
+    handleFileSuccess(response) {
+      this.upload.open = false
+      this.upload.isUploading = false
+      this.$refs.upload.clearFiles()
+      this.$alert(response.message, "导入结果", { dangerouslyUseHTMLString: true })
+      this.initEmployee()
+    },
+    // ----- 导入 Excel -----
+    submitFileForm() {
+      this.$refs.upload.submit()
     },
 
     // ----- 表头样式 -----
@@ -1357,5 +1430,8 @@ export default {
 }
 .editTree .vue-treeselect div, .vue-treeselect span {
   box-sizing: content-box;
+}
+.el-upload__tip{
+  line-height: 0.5;
 }
 </style>
