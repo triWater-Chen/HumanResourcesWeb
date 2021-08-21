@@ -81,15 +81,6 @@
           </el-button>
         </el-col>
         <el-col :span="1.5">
-          <el-tooltip effect="dark" content="刷新" placement="top">
-            <el-button icon="el-icon-refresh"
-                       circle
-                       size="mini"
-                       @click="refreshRole"
-            />
-          </el-tooltip>
-        </el-col>
-        <el-col :span="1.5">
           <el-tooltip effect="dark" content="隐藏搜索栏" placement="top"  v-show="showQuery">
             <el-button icon="el-icon-zoom-out"
                        circle
@@ -102,6 +93,15 @@
                        circle
                        size="mini"
                        @click="showQuery = true"
+            />
+          </el-tooltip>
+        </el-col>
+        <el-col :span="1.5">
+          <el-tooltip effect="dark" content="刷新" placement="top">
+            <el-button icon="el-icon-refresh"
+                       circle
+                       size="mini"
+                       @click="refreshRole"
             />
           </el-tooltip>
         </el-col>
