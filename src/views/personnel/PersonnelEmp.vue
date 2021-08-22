@@ -1,6 +1,7 @@
 <template>
   <div>
-    <el-form :inline="true" v-show="showQuery">
+    <div class="employeeFormItem">
+      <el-form :inline="true" v-show="showQuery">
       <el-form-item>
         <span slot="label" class="employeeQueryStyle">员工名</span>
         <el-input size="small"
@@ -16,12 +17,27 @@
                    placeholder="请选择职位"
                    clearable
                    size="small"
-                   style="width: 200px;"
+                   style="width: 150px;"
         >
           <el-option v-for="position in positions"
                      :key="position.id"
                      :label="position.name"
                      :value="position.id"
+          />
+        </el-select>
+      </el-form-item>
+      <el-form-item>
+        <span slot="label" class="employeeQueryStyle">职称</span>
+        <el-select v-model="queryEmployee.jobLevelId"
+                   placeholder="请选择职称"
+                   clearable
+                   size="small"
+                   style="width: 150px;"
+        >
+          <el-option v-for="jobLevel in jobLevels"
+                     :key="jobLevel.id"
+                     :label="jobLevel.name"
+                     :value="jobLevel.id"
           />
         </el-select>
       </el-form-item>
@@ -48,6 +64,16 @@
         </el-button>
       </el-form-item>
       <el-form-item>
+        <el-button :icon="showAdvanceQuery ? 'el-icon-caret-top' : 'el-icon-caret-bottom'"
+                   type="success"
+                   plain
+                   size="small"
+                   @click="showAdvanceQuery = !showAdvanceQuery"
+        >
+          高级搜素
+        </el-button>
+      </el-form-item>
+      <el-form-item>
         <el-button icon="el-icon-refresh"
                    size="small"
                    @click="refreshEmployee"
@@ -55,9 +81,92 @@
           重置
         </el-button>
       </el-form-item>
-    </el-form>
 
-    <div>
+      <!-- 显示高级搜索框 -->
+      <transition name="fade">
+        <div v-show="showAdvanceQuery" style="border: 1px solid #409eff;border-radius: 5px;box-sizing: border-box;padding: 5px;margin: 10px 0;">
+          <el-form :inline="true">
+            <el-form-item>
+              <span slot="label" class="employeeQueryStyle">身份证号</span>
+              <el-input size="small"
+                        v-model="queryEmployee.idCard"
+                        style="width: 180px; margin-right: 10px"
+                        placeholder="请输入员工身份证号"
+              />
+            </el-form-item>
+            <el-form-item>
+              <span slot="label" class="employeeQueryStyle">工号</span>
+              <el-input size="small"
+                        v-model="queryEmployee.workId"
+                        style="width: 140px; margin-right: 10px"
+                        placeholder="请输入员工工号"
+              />
+            </el-form-item>
+            <el-form-item>
+              <span slot="label" class="employeeQueryStyle">民族</span>
+              <el-select v-model="queryEmployee.nationId"
+                         placeholder="请选择民族"
+                         clearable
+                         size="small"
+                         style="width: 120px; margin-right: 10px"
+              >
+                <el-option v-for="nation in nations"
+                           :key="nation.id"
+                           :label="nation.name"
+                           :value="nation.id"
+                />
+              </el-select>
+            </el-form-item>
+            <el-form-item>
+              <span slot="label" class="employeeQueryStyle">政治面貌</span>
+              <el-select v-model="queryEmployee.politicId"
+                         placeholder="请选择政治面貌"
+                         clearable
+                         size="small"
+                         style="width: 150px; margin-right: 10px"
+              >
+                <el-option v-for="item in politicsStatus"
+                           :key="item.id"
+                           :label="item.name"
+                           :value="item.id"
+                />
+              </el-select>
+            </el-form-item>
+            <el-form-item>
+              <span slot="label" class="employeeQueryStyle">入职时间</span>
+              <el-date-picker  v-model="dateRange"
+                               size="small"
+                               style="width: 240px; margin-right: 10px"
+                               value-format="yyyy-MM-dd"
+                               type="daterange"
+                               range-separator="-"
+                               start-placeholder="开始日期"
+                               end-placeholder="结束日期"
+              />
+            </el-form-item>
+            <el-form-item>
+              <span slot="label" class="employeeQueryStyle">聘用形式</span>
+              <el-radio-group v-model="queryEmployee.engageForm" size="small" style="margin-right: 10px">
+                <el-radio-button label="劳动合同">劳动合同</el-radio-button>
+                <el-radio-button label="劳务合同">劳务合同</el-radio-button>
+                <el-radio-button>皆选</el-radio-button>
+              </el-radio-group>
+            </el-form-item>
+            <el-form-item>
+              <span slot="label" class="employeeQueryStyle">在职状态</span>
+              <el-radio-group v-model="queryEmployee.workState" size="small">
+                <el-radio-button label="在职">在职</el-radio-button>
+                <el-radio-button label="离职">离职</el-radio-button>
+                <el-radio-button>皆选</el-radio-button>
+              </el-radio-group>
+            </el-form-item>
+          </el-form>
+        </div>
+      </transition>
+    </el-form>
+    </div>
+
+    <div style="margin-top: 12px">
       <el-row :gutter="10" style="margin-bottom: 10px;">
         <el-col :span="1.5">
           <el-button type="primary"
@@ -160,7 +269,7 @@
           />
           <el-table-column prop="workId"
                            label="工号"
-                           min-width="110"
+                           min-width="120"
                            header-align="center"
                            align="center"
                            sortable
@@ -173,14 +282,14 @@
           />
           <el-table-column prop="phone"
                            label="手机号码"
-                           min-width="140"
+                           min-width="150"
                            header-align="center"
                            align="center"
                            sortable
           />
           <el-table-column prop="idCard"
                            label="身份证号码"
-                           min-width="190"
+                           min-width="200"
                            header-align="center"
                            align="center"
                            sortable
@@ -194,20 +303,20 @@
           />
           <el-table-column prop="birthday"
                            label="出生日期"
-                           min-width="110"
+                           min-width="120"
                            header-align="center"
                            align="center"
           />
           <el-table-column prop="wedlock"
                            label="婚姻状况"
-                           min-width="80"
+                           min-width="90"
                            header-align="center"
                            align="center"
           />
           <el-table-column prop="nation.name"
                            label="民族"
                            show-overflow-tooltip
-                           min-width="80"
+                           min-width="90"
                            header-align="center"
                            align="center"
           />
@@ -221,7 +330,7 @@
           <el-table-column prop="politicsStatus.name"
                            label="政治面貌"
                            show-overflow-tooltip
-                           min-width="100"
+                           min-width="110"
                            header-align="center"
                            align="center"
           />
@@ -234,31 +343,31 @@
           />
           <el-table-column prop="department.name"
                            label="所属部门"
-                           min-width="100"
+                           min-width="120"
                            header-align="center"
                            align="center"
           />
           <el-table-column prop="position.name"
                            label="职位"
-                           min-width="100"
+                           min-width="120"
                            header-align="center"
                            align="center"
           />
           <el-table-column prop="jobLevel.name"
                            label="职称"
-                           min-width="100"
+                           min-width="120"
                            header-align="center"
                            align="center"
           />
           <el-table-column prop="engageForm"
                            label="聘用形式"
-                           min-width="100"
+                           min-width="120"
                            header-align="center"
                            align="center"
           />
           <el-table-column prop="tiptopDegree"
                            label="最高学历"
-                           min-width="80"
+                           min-width="100"
                            header-align="center"
                            align="center"
           />
@@ -726,7 +835,7 @@
           <em>点击上传</em>
         </div>
         <div class="el-upload__tip" slot="tip" style="text-align: center">
-          <el-checkbox v-model="upload.updateSupport">更新已经存在的用户数据</el-checkbox>
+          <el-checkbox v-model="upload.updateSupport">根据 id 自动更新已有用户数据</el-checkbox>
         </div>
         <div class="el-upload__tip" slot="tip" style="text-align: center">
           仅允许导入 xls、xlsx 格式文件
@@ -750,6 +859,7 @@
 <script>
 import TreeSelect from "@riophae/vue-treeselect";
 import "@riophae/vue-treeselect/dist/vue-treeselect.css";
+import {addDateRange} from "../../utils/commonTools";
 
 export default {
   name: "PersonnelEmp",
@@ -926,6 +1036,8 @@ export default {
       loading: false,
       buttonLoading: false,
 
+      showAdvanceQuery: false,
+      dateRange: [],
       total: 0,
       queryEmployee: {
         current: 1,
@@ -1030,7 +1142,7 @@ export default {
       this.loading = true
       this.initVarData()
       this.API.employeeGet({
-        params: this.queryEmployee
+        params: addDateRange(this.queryEmployee, this.dateRange)
       }).then(res => {
         if (res.code === 200) {
           this.employees = res.data.list.records
@@ -1117,6 +1229,7 @@ export default {
         current: 1,
         size: 12,
       }
+      this.dateRange = []
     },
 
     // ----- 处理分页 -----
@@ -1157,7 +1270,7 @@ export default {
       this.queryEmployee.current = 1
 
       this.API.employeeGet({
-        params: this.queryEmployee
+        params: addDateRange(this.queryEmployee, this.dateRange)
       }).then(res => {
         if (res.code === 200) {
           this.employees = res.data.list.records
@@ -1433,5 +1546,16 @@ export default {
 }
 .el-upload__tip{
   line-height: 0.5;
+}
+.employeeFormItem .el-form-item {
+  margin-bottom: 5px;
+}
+/* 可以设置不同的进入和离开动画 */
+/* 设置持续时间和动画函数 */
+.fade-enter-active, .fade-leave-active {
+  transition: opacity .5s;
+}
+.fade-enter, .fade-leave-to /* .fade-leave-active below version 2.1.8 */ {
+  opacity: 0;
 }
 </style>
