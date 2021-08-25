@@ -456,6 +456,23 @@
 
     </div>
 
+    <el-backtop target=".el-main" :bottom="100">
+      <div
+          style="{
+        height: 100%;
+        width: 100%;
+        background-color: #001529;
+        box-shadow: 0 0 6px rgba(0,0,0, .12);
+        text-align: center;
+        line-height: 40px;
+        color: #1890ff;
+        border-radius: 50%;
+      }"
+      >
+        ↑
+      </div>
+    </el-backtop>
+
     <div class="paginationStyle">
       <el-pagination background
                      layout="total, sizes, prev, pager, next, jumper"
