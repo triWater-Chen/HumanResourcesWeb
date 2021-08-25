@@ -150,5 +150,19 @@ export default {
     // ----- Excel 相关 -----
     employeeExport(params) {
         return get('/personnel/emp/export', params)
-    }
+    },
+
+    // ----- 工资账套管理 -----
+    sobGet(params) {
+        return get('/salary/sob/list', params)
+    },
+    sobAdd(params) {
+        return post('/salary/sob/add', params)
+    },
+    sobUpdate(params) {
+        return post('/salary/sob/update', params)
+    },
+    sobRemoveBatch(params) {
+        return post('/salary/sob/removeBatch', params)
+    },
 }
