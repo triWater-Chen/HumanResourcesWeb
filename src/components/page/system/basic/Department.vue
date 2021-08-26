@@ -428,6 +428,8 @@ export default {
                     this.initDepartment()
                     this.$message.success(res.message)
                     done()
+                  } else {
+                    done()
                   }
                 }).catch(() => {
                   instance.confirmButtonLoading = false

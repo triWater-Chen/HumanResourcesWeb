@@ -295,6 +295,8 @@ export default {
                     this.initPosition()
                     this.$message.success(res.message)
                     done()
+                  } else {
+                    done()
                   }
                 }).catch(() => {
                   instance.confirmButtonLoading = false
@@ -338,6 +340,8 @@ export default {
                   if (res.success) {
                     this.initPosition()
                     this.$message.success(res.message)
+                    done()
+                  } else {
                     done()
                   }
                 }).catch(() => {

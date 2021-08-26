@@ -614,6 +614,8 @@ export default {
                     this.initRole()
                     this.$message.success(res.message)
                     done()
+                  } else {
+                    done()
                   }
                 }).catch(() => {
                   instance.confirmButtonLoading = false
@@ -653,6 +655,8 @@ export default {
                     }
                     this.initRole()
                     this.$message.success(data.message)
+                    done()
+                  } else {
                     done()
                   }
                 }).catch(() => {

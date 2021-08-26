@@ -1429,6 +1429,8 @@ export default {
                     this.initEmployee()
                     this.$message.success(res.message)
                     done()
+                  } else {
+                    done()
                   }
                 }).catch(() => {
                   instance.confirmButtonLoading = false
@@ -1468,6 +1470,8 @@ export default {
                     }
                     this.initEmployee()
                     this.$message.success(data.message)
+                    done()
+                  } else {
                     done()
                   }
                 }).catch(() => {

@@ -340,10 +340,12 @@ export default {
                 const deleteId = []
                 deleteId.push(data.id)
                 this.API.jobLevelRemoveBatch(deleteId).then(res => {
+                  instance.confirmButtonLoading = false
                   if (res.success) {
-                    instance.confirmButtonLoading = false
                     this.initJobLevel()
                     this.$message.success(res.message)
+                    done()
+                  } else {
                     done()
                   }
                 }).catch(() => {
@@ -375,10 +377,12 @@ export default {
                 instance.confirmButtonText = '删除中...'
 
                 this.API.jobLevelRemoveBatch(this.ids).then(data => {
+                  instance.confirmButtonLoading = false
                   if (data.success) {
-                    instance.confirmButtonLoading = false
                     this.initJobLevel()
                     this.$message.success(data.message)
+                    done()
+                  } else {
                     done()
                   }
                 }).catch(() => {
