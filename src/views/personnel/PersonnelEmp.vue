@@ -5,6 +5,7 @@
       <el-form-item>
         <span slot="label" class="employeeQueryStyle">员工名</span>
         <el-input size="small"
+                  clearable
                   v-model="queryEmployee.name"
                   style="width: 180px;"
                   placeholder="请输入员工名"
@@ -89,6 +90,7 @@
             <el-form-item>
               <span slot="label" class="employeeQueryStyle">身份证号</span>
               <el-input size="small"
+                        clearable
                         v-model="queryEmployee.idCard"
                         style="width: 180px; margin-right: 10px"
                         placeholder="请输入员工身份证号"
@@ -97,6 +99,7 @@
             <el-form-item>
               <span slot="label" class="employeeQueryStyle">工号</span>
               <el-input size="small"
+                        clearable
                         v-model="queryEmployee.workId"
                         style="width: 140px; margin-right: 10px"
                         placeholder="请输入员工工号"
@@ -507,6 +510,7 @@
               <el-form-item prop="name">
                 <span slot="label" class="employeeFormStyle">姓名</span>
                 <el-input v-model="editForm.name"
+                          clearable
                           size="small"
                           placeholder="请输入员工名"
                           maxlength="12"
@@ -530,6 +534,7 @@
               <el-form-item prop="nativePlace">
                 <span slot="label" class="employeeFormStyle">籍贯</span>
                 <el-input v-model="editForm.nativePlace"
+                          clearable
                           size="small"
                           placeholder="请输入籍贯"
                           prefix-icon="el-icon-edit"
@@ -559,6 +564,7 @@
               <el-form-item prop="email">
                 <span slot="label" class="employeeFormStyle">邮箱</span>
                 <el-input v-model="editForm.email"
+                          clearable
                           size="small"
                           placeholder="请输入邮箱"
                           prefix-icon="el-icon-message"
@@ -570,6 +576,7 @@
               <el-form-item prop="phone">
                 <span slot="label" class="employeeFormStyle">手机号</span>
                 <el-input v-model="editForm.phone"
+                          clearable
                           size="small"
                           placeholder="请输入手机号"
                           maxlength="11"
@@ -596,6 +603,7 @@
               <el-form-item prop="idCard">
                 <span slot="label" class="employeeFormStyle">身份证号</span>
                 <el-input v-model="editForm.idCard"
+                          clearable
                           size="small"
                           placeholder="请输入身份证号"
                           maxlength="18"
@@ -644,6 +652,7 @@
               <el-form-item prop="school">
                 <span slot="label" class="employeeFormStyle">毕业院校</span>
                 <el-input v-model="editForm.school"
+                          clearable
                           size="small"
                           placeholder="请输入校名"
                           prefix-icon="el-icon-school"
@@ -655,6 +664,7 @@
               <el-form-item prop="specialty">
                 <span slot="label" class="employeeFormStyle">所属专业</span>
                 <el-input v-model="editForm.specialty"
+                          clearable
                           size="small"
                           placeholder="请输入专业名"
                           prefix-icon="el-icon-edit"
@@ -677,6 +687,7 @@
             <el-form-item prop="address">
               <span slot="label" class="employeeFormStyle">联系地址</span>
               <el-input v-model="editForm.address"
+                        clearable
                         size="small"
                         placeholder="请输入地址"
                         prefix-icon="el-icon-edit"

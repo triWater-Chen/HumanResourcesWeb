@@ -4,6 +4,7 @@
       <!-- 当 form 内只有一个输入框时,按回车会自动提交，使用 @submit 来阻止页面刷新-->
       <el-form-item>
         <el-input size="small"
+                  clearable
                   style="width: 200px;"
                   placeholder="添加职位..."
                   prefix-icon="el-icon-plus"
@@ -117,6 +118,7 @@
         <el-form-item>
           <el-tag>职位名称</el-tag>
           <el-input v-model="editPost.name"
+                    clearable
                     size="medium"
                     class="editDialogInput"
           />

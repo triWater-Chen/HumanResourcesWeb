@@ -3,6 +3,7 @@
     <el-form :inline="true">
       <el-form-item>
         <el-input size="small"
+                  clearable
                   v-model="addLevel.name"
                   style="width: 200px;"
                   prefix-icon="el-icon-plus"
@@ -140,6 +141,7 @@
         <el-form-item>
           <el-tag>职称名称</el-tag>
           <el-input v-model="editPost.name"
+                    clearable
                     size="medium"
                     style="width: 200px; margin-left: 10px;"
           />

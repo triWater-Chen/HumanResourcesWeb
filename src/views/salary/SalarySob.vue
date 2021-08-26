@@ -188,6 +188,7 @@
           <el-form-item prop="name">
             <el-tag>职称名称</el-tag>
             <el-input v-model="editForm.name"
+                      clearable
                       size="medium"
                       style="width: 345px; margin-left: 10px"
             />

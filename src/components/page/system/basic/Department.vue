@@ -3,6 +3,7 @@
     <el-form :inline="true">
       <el-form-item>
         <el-input size="small"
+                  clearable
                   v-model="queryDep.name"
                   style="width: 160px;"
                   prefix-icon="el-icon-search"
@@ -159,6 +160,7 @@
             <el-form-item>
               <el-tag>部门名称</el-tag>
               <el-input v-model="editForm.name"
+                        clearable
                         style="width: 280px; margin-left: 10px;"
               />
             </el-form-item>
@@ -201,7 +203,7 @@ export default {
   components: { TreeSelect },
   data() {
     return {
-      loading: true,
+      loading: false,
       buttonLoading: false,
 
       // 用于查询

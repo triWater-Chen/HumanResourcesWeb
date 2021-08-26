@@ -3,6 +3,7 @@
     <el-form :inline="true">
       <el-form-item>
         <el-input size="small"
+                  clearable
                   v-model="queryHr.username"
                   style="width: 150px;"
                   prefix-icon="el-icon-search"
@@ -12,6 +13,7 @@
       </el-form-item>
       <el-form-item>
         <el-input size="small"
+                  clearable
                   v-model="queryHr.name"
                   style="width: 150px;"
                   prefix-icon="el-icon-search"
@@ -216,6 +218,7 @@
             <el-form-item prop="username">
               <span slot="label" class="hrFormStyle">用户名</span>
               <el-input v-model="editForm.username"
+                        clearable
                         placeholder="请输入用户名"
                         maxlength="12"
                         style="width: 160px;"
@@ -226,6 +229,7 @@
             <el-form-item prop="phone">
               <span slot="label" class="hrFormStyle">手机号</span>
               <el-input v-model="editForm.phone"
+                        clearable
                         placeholder="请输入手机号"
                         maxlength="11"
                         style="width: 160px;"
@@ -239,6 +243,7 @@
             <el-form-item prop="password">
               <span slot="label" class="hrFormStyle">密码</span>
               <el-input v-model="editForm.password"
+                        show-password
                         type="password"
                         placeholder="请输入密码"
                         maxlength="20"
@@ -250,6 +255,7 @@
             <el-form-item prop="passwordConfirm">
               <span slot="label" class="hrFormStyle">确认</span>
               <el-input v-model="editForm.passwordConfirm"
+                        clearable
                         type="password"
                         placeholder="请再次输入密码"
                         maxlength="20"
@@ -263,6 +269,7 @@
             <el-form-item prop="name">
               <span slot="label" class="hrFormStyle">昵称</span>
               <el-input v-model="editForm.name"
+                        clearable
                         placeholder="请输入昵称"
                         maxlength="12"
                         style="width: 160px;"
@@ -272,6 +279,7 @@
           <el-col :span="12">
             <el-form-item label="座机号" prop="telephone">
               <el-input v-model="editForm.telephone"
+                        clearable
                         placeholder="请输入座机号"
                         maxlength="12"
                         style="width: 160px;"
@@ -283,6 +291,7 @@
           <el-col :span="12">
             <el-form-item label="地址">
               <el-input v-model="editForm.address"
+                        clearable
                         placeholder="请输入联系地址"
                         maxlength="15"
                         style="width: 160px;"
@@ -309,6 +318,7 @@
           <el-col :span="24">
             <el-form-item label="备注">
               <el-input v-model="editForm.remark"
+                        clearable
                         placeholder="请输入备注内容"
                         type="textarea"
                         :autosize="{minRows: 2, maxRows: 2}"
@@ -401,7 +411,7 @@ export default {
     }
 
     return {
-      loading: true,
+      loading: false,
       buttonLoading: false,
 
       // 用于查询
@@ -632,6 +642,8 @@ export default {
                   if (res.success) {
                     this.initHr()
                     this.$message.success(res.message)
+                    done()
+                  } else {
                     done()
                   }
                 }).catch(() => {

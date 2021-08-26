@@ -3,6 +3,7 @@
     <el-form :inline="true" v-show="showQuery">
       <el-form-item>
         <el-input size="small"
+                  clearable
                   v-model="queryRole.name"
                   style="width: 230px;"
                   placeholder="请输入角色英文名"
@@ -13,6 +14,7 @@
       </el-form-item>
       <el-form-item>
         <el-input size="small"
+                  clearable
                   v-model="queryRole.namezh"
                   style="width: 160px;"
                   placeholder="请输入角色中文名"
@@ -212,6 +214,7 @@
         <el-form-item>
           <el-tag>角色英文名称</el-tag>
           <el-input size="medium"
+                    clearable
                     v-model="editForm.name"
                     style="width: 280px; margin-left: 10px;"
           >
@@ -221,6 +224,7 @@
         <el-form-item>
           <el-tag>角色中文名称</el-tag>
           <el-input v-model="editForm.namezh"
+                    clearable
                     size="medium"
                     style="width: 280px; margin-left: 10px;"
           />
@@ -286,7 +290,7 @@ export default {
   data() {
     return {
       showQuery: true,
-      loading: true,
+      loading: false,
       buttonLoading: false,
 
       multipleSelection: [],
