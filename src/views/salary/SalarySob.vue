@@ -470,16 +470,29 @@ export default {
           if (this.editForm.id === undefined) {
             // 进行添加
 
-            this.buttonLoading = false
-            this.dialogVisible = false
+            this.API.sobAdd(this.editForm).then(res => {
+              this.buttonLoading = false
+              if (res.success) {
+                this.$message.success(res.message)
+                this.initSob()
+                this.dialogVisible = false
+              }
+            }).catch(() => {
+              this.buttonLoading = false
+            })
           } else {
             // 进行修改
 
-            setTimeout(() => {
+            this.API.sobUpdate(this.editForm).then(res => {
               this.buttonLoading = false
-              this.dialogVisible = false
-            }, 1000)
-
+              if (res.success) {
+                this.$message.success(res.message)
+                this.initSob()
+                this.dialogVisible = false
+              }
+            }).catch(() => {
+              this.buttonLoading = false
+            })
           }
         } else {
           this.$message.error("职称名称不可为空")
@@ -490,9 +503,77 @@ export default {
     },
 
 
-    handleSelectionChange() {},
-    handleDelete() {},
-    deleteBatch() {},
+    // ----- 删除工资账套 -----
+    handleDelete(data) {
+      this.$confirm('此操作将永久删除工资账套【' + data.name + '】, 是否继续?',
+          '提示',
+          {
+            confirmButtonText: '确 定',
+            cancelButtonText: '取 消',
+            type: 'warning',
+            beforeClose: ((action, instance, done) => {
+              if (action === 'confirm') {
+                instance.confirmButtonLoading = true
+                instance.confirmButtonText = '删除中...'
+
+                const deleteId = []
+                deleteId.push(data.id)
+                this.API.sobRemoveBatch(deleteId).then(res => {
+                  instance.confirmButtonLoading = false
+                  if (res.success) {
+                    this.initSob()
+                    this.$message.success(res.message)
+                    done()
+                  } else {
+                    done()
+                  }
+                }).catch(() => {
+                  instance.confirmButtonLoading = false
+                  instance.confirmButtonText = '确 定'
+                })
+              } else {
+                done()
+              }
+            })
+          }).catch(() => {})
+    },
+    handleSelectionChange(val) {
+      // 传入选中的值
+      this.multipleSelection = val
+      // 遍历选中的值，将 id 存入一个集合中
+      this.ids = val.map(item => item.id)
+    },
+    deleteBatch() {
+      this.$confirm('此操作将永久删除编号为【' + this.ids + '】的工资账套, 是否继续?',
+          '提示',
+          {
+            confirmButtonText: '确 定',
+            cancelButtonText: '取 消',
+            type: 'warning',
+            beforeClose: ((action, instance, done) => {
+              if (action === 'confirm') {
+                instance.confirmButtonLoading = true
+                instance.confirmButtonText = '删除中...'
+
+                this.API.sobRemoveBatch(this.ids).then(data => {
+                  instance.confirmButtonLoading = false
+                  if (data.success) {
+                    this.initSob()
+                    this.$message.success(data.message)
+                    done()
+                  } else {
+                    done()
+                  }
+                }).catch(() => {
+                  instance.confirmButtonLoading = false
+                  instance.confirmButtonText = '确 定'
+                })
+              } else {
+                done()
+              }
+            })
+          }).catch(() => {})
+    },
 
     // ----- 表头样式 -----
     myTableStyle() {
