@@ -165,4 +165,21 @@ export default {
     sobRemoveBatch(params) {
         return post('/salary/sob/removeBatch', params)
     },
+
+    // ----- 员工账套管理 -----
+    salaryGet(params) {
+        return get('/salary/sobConfig/list', params)
+    },
+    salaryAdd(params) {
+        return post('/salary/sobConfig/add', params)
+    },
+    salaryUpdate(params) {
+        return post('/salary/sobConfig/update', params)
+    },
+    salaryRemoveBatch(params) {
+        return post('/salary/sobConfig/removeBatch', params)
+    },
+    salaryOfDepartments() {
+        return get('/salary/sobConfig/departments')
+    },
 }
