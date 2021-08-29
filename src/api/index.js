@@ -16,6 +16,10 @@ export default {
     getMenu() {
         return get('/system/menu')
     },
+    // 下载文件
+    downloadFile(params) {
+        window.open('/cl/system/download?fileName=' + params + '&delete=true', '_parent')
+    },
 
     // ----- 职位管理 -----
     positionGet() {
@@ -66,7 +70,7 @@ export default {
     menuTree() {
         return get('/system/basic/role/menuTree')
     },
-    // ----- 查询所有菜单 -----
+    // ----- 查询某个角色的所有菜单 -----
     menuIdByRole(params) {
         return get('/system/basic/role/menuByRole/' + params)
     },
@@ -102,8 +106,77 @@ export default {
     hrRemove(params) {
         return post('/system/hr/remove/' + params)
     },
-    // ----- 查询部门树 -----
-    hrWithRole() {
-        return get('/system/hr/departmentTree')
+    hrResetPassword(params) {
+        return post('/system/hr/resetPassword', params)
+    },
+    // ----- 根据 id 查询所属所有角色 -----
+    hrWithRole(params) {
+        return get('/system/hr/hrWithRole/' + params)
+    },
+    // ----- 根据 id 更新所属所有角色 -----
+    hrUpdateByRole(params) {
+        return post('/system/hr/hrUpdateByRole', params)
+    },
+
+    // ----- 员工管理 -----
+    employeeGet(params) {
+        return get('/personnel/emp/list', params)
+    },
+    employeeAdd(params) {
+        return post('/personnel/emp/add', params)
+    },
+    employeeUpdate(params) {
+        return post('/personnel/emp/update', params)
+    },
+    employeeRemoveBatch(params) {
+        return post('/personnel/emp/removeBatch', params)
+    },
+    // ----- 获取下拉表数据 -----
+    employeeOfNations() {
+        return get('/personnel/emp/nations')
+    },
+    employeeOfPoliticsStatus() {
+        return get('/personnel/emp/politicsStatus')
+    },
+    employeeOfJobLevels() {
+        return get('/personnel/emp/jobLevels')
+    },
+    employeeOfPositions() {
+        return get('/personnel/emp/positions')
+    },
+    employeeOfDepartments() {
+        return get('/personnel/emp/departments')
+    },
+    // ----- Excel 相关 -----
+    employeeExport(params) {
+        return get('/personnel/emp/export', params)
+    },
+
+    // ----- 工资账套管理 -----
+    sobGet(params) {
+        return get('/salary/sob/list', params)
+    },
+    sobAdd(params) {
+        return post('/salary/sob/add', params)
+    },
+    sobUpdate(params) {
+        return post('/salary/sob/update', params)
+    },
+    sobRemoveBatch(params) {
+        return post('/salary/sob/removeBatch', params)
+    },
+
+    // ----- 员工账套管理 -----
+    salaryGet(params) {
+        return get('/salary/sobConfig/list', params)
+    },
+    salaryUpdate(params) {
+        return post('/salary/sobConfig/update', params)
+    },
+    salaryOfSobs() {
+        return get('/salary/sobConfig/sobs')
+    },
+    salaryOfDepartments() {
+        return get('/salary/sobConfig/departments')
     },
 }

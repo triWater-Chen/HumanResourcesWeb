@@ -5,10 +5,6 @@
         status-icon
         :rules="rules"
         ref="loginForm"
-        v-loading="loading"
-        element-loading-text="正在登录..."
-        element-loading-spinner="el-icon-loading"
-        element-loading-background="rgba(0, 0, 0, 0.8)"
         class="loginContainer">
       <h3 class="loginTitle">
         登录
@@ -18,7 +14,8 @@
                   size="normal"
                   type="text"
                   auto-complete="off"
-                  placeholder="请输入用户名"
+                  placeholder="请输入用户名或手机号"
+                  @keydown.enter.native="submitLogin"
         />
       </el-form-item>
       <el-form-item prop="password">
@@ -33,10 +30,12 @@
       <el-checkbox v-model="checked" size="normal" class="loginRemember" >记住密码</el-checkbox>
       <el-button size="normal"
                  type="primary"
+                 :loading="loading"
                  style="width: 100%; margin: 5px 0 10px 0;"
                  @click="submitLogin"
       >
-        登录
+        <span v-if="!loading">登 录</span>
+        <span v-else>登 录 中...</span>
       </el-button>
     </el-form>
   </div>
@@ -51,7 +50,7 @@ export default {
     // 表单验证
     let checkUser = (rule, value, callback) => {
       if (value === '') {
-        callback(new Error('请输入用户名'))
+        callback(new Error('请输入用户名或手机号'))
       } else {
         callback()
       }
@@ -86,9 +85,15 @@ export default {
       // $refs 是对全部组件的查找，ref="loginForm" 即定义 <el-form> 表单组件的名字
       this.$refs.loginForm.validate((valid) => {
         if (valid) {
+          this.loading = true
           this.API.login(this.loginForm).then(res => {
-            this.SessionStorage.set("USER", res)
-            this.$router.replace('/')
+            this.loading = false
+            if (res.success) {
+              this.SessionStorage.set("USER", res.data.user)
+              this.$router.replace('/')
+            }
+          }).catch(() => {
+            this.loading = false
           })
         } else {
           return false

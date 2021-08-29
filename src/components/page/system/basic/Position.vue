@@ -4,6 +4,7 @@
       <!-- 当 form 内只有一个输入框时,按回车会自动提交，使用 @submit 来阻止页面刷新-->
       <el-form-item>
         <el-input size="small"
+                  clearable
                   style="width: 200px;"
                   placeholder="添加职位..."
                   prefix-icon="el-icon-plus"
@@ -15,10 +16,11 @@
         <el-button icon="el-icon-plus"
                    size="small"
                    type="primary"
+                   :loading="addLoading"
                    style="margin-top: 5px"
                    @click="handleAdd"
         >
-          添加
+          {{ addLoading ? '添加中...' : '添 加' }}
         </el-button>
         <el-button type="danger"
                    size="small"
@@ -39,6 +41,7 @@
 
     <div>
       <el-table :data="positions"
+                v-loading="loading"
                 border
                 stripe
                 size="small"
@@ -115,6 +118,7 @@
         <el-form-item>
           <el-tag>职位名称</el-tag>
           <el-input v-model="editPost.name"
+                    clearable
                     size="medium"
                     class="editDialogInput"
           />
@@ -128,7 +132,7 @@
       </el-form>
       <span slot="footer" class="dialog-footer">
         <el-button size="small" @click="dialogVisible = false">取 消</el-button>
-        <el-button size="small" type="primary" @click="handleEdit">确 定</el-button>
+        <el-button :loading="buttonLoading" size="small" type="primary" @click="handleEdit">{{ buttonLoading ? '提交中...' : '确 定' }}</el-button>
       </span>
     </el-dialog>
   </div>
@@ -139,6 +143,10 @@ export default {
   name: "Position",
   data() {
     return {
+      loading: true,
+      buttonLoading: false,
+      addLoading: false,
+
       // 用于添加职位
       addPosition: { name: ''},
       positions: [],
@@ -163,34 +171,45 @@ export default {
 
     // ----- 初始化数据 -----
     initPosition() {
+      this.loading = true
       this.API.positionGet()
           .then(data => {
             if (data.success) {
               this.positions = data.data.list
             }
+            this.loading = false
           })
     },
 
     // ----- 刷新数据 -----
     refreshPosition() {
+      this.loading = true
       this.API.positionGet().then(res => {
         if (res.success) {
           this.positions = res.data.list
           this.$message.success("刷新成功")
         }
+        this.loading = false
+      }).catch(() => {
+        this.loading = false
       })
     },
 
     // ----- 添加职位 -----
     handleAdd() {
       if (this.addPosition.name) {
+        this.addLoading = true
         this.API.positionAdd(this.addPosition)
             .then(data => {
+              this.addLoading = false
               if (data.success) {
                 this.$message.success(data.message)
                 this.initPosition()
                 this.addPosition.name = ''
               }
+            })
+            .catch(() => {
+              this.addLoading = false
             })
       } else {
         this.$message.error("职位名称不可为空")
@@ -205,16 +224,31 @@ export default {
           {
             confirmButtonText: '确 定',
             cancelButtonText: '取 消',
-            type: 'warning'
-          }).then(() => {
-        this.API.positionUpdate(data).then(res => {
-          if (res.success) {
-            this.$message.success(text + "成功")
-          }
-        })
-      }).catch(() => {
-        data.enabled = data.enabled !== true
-      })
+            type: 'warning',
+            beforeClose: ((action, instance, done) => {
+              if (action === 'confirm') {
+                instance.confirmButtonLoading = true
+                instance.confirmButtonText = text + '中...'
+
+                this.API.positionUpdate(data).then(res => {
+                  instance.confirmButtonLoading = false
+                  if (res.success) {
+                    this.$message.success(text + "成功")
+                    done()
+                  }
+                }).catch(() => {
+                  data.enabled = data.enabled !== true
+                  instance.confirmButtonLoading = false
+                  instance.confirmButtonText = '确 定'
+                  done()
+                })
+              } else {
+                done()
+              }
+            })
+          }).catch(() => {
+            data.enabled = data.enabled !== true
+          })
     },
 
     // ----- 编辑职位 -----
@@ -225,13 +259,17 @@ export default {
     },
     handleEdit() {
       if (this.editPost.name) {
+        this.buttonLoading = true
         this.API.positionUpdate(this.editPost).then(data => {
+          this.buttonLoading = false
           if (data.success) {
             this.$message.success(data.message)
             this.initPosition()
             this.editPost.name = ''
             this.dialogVisible = false
           }
+        }).catch(() => {
+          this.buttonLoading = false
         })
       } else {
         this.$message.error("职位名称不可为空")
@@ -245,27 +283,40 @@ export default {
           {
             confirmButtonText: '确 定',
             cancelButtonText: '取 消',
-            type: 'warning'
-          }).then(() => {
-            // ----- 统一使用批量删除的方法 -----
-            const deleteId = []
-            deleteId.push(data.id);
-            this.API.positionRemoveBatch(deleteId).then(data => {
-              if (data.success) {
-                    this.$message.success(data.message)
-                    this.initPosition();
-                  }
-            })
+            type: 'warning',
+            beforeClose: ((action, instance, done) => {
+              if (action === 'confirm') {
+                instance.confirmButtonLoading = true
+                instance.confirmButtonText = '删除中...'
 
-            // ----- 使用单个删除的方法 -----
-            // this.API.positionRemove(data.id).then(data => {
-            //   if (data.success) {
-            //     this.$message.success(data.message)
-            //     this.initPosition();
-            //   }
-            // })
+                const deleteId = []
+                deleteId.push(data.id)
+                this.API.positionRemoveBatch(deleteId).then(res => {
+                  instance.confirmButtonLoading = false
+                  if (res.success) {
+                    this.initPosition()
+                    this.$message.success(res.message)
+                    done()
+                  } else {
+                    done()
+                  }
+                }).catch(() => {
+                  instance.confirmButtonLoading = false
+                  instance.confirmButtonText = '确 定'
+                })
+              } else {
+                done()
+              }
+            })
           }).catch(() => {})
     },
+    // ----- 使用单个删除的方法 -----
+    // this.API.positionRemove(data.id).then(data => {
+    //   if (data.success) {
+    //     this.$message.success(data.message)
+    //     this.initPosition();
+    //   }
+    // })
 
     // ----- 进行批量删除 -----
     handleSelectionChange(val) {
@@ -280,15 +331,30 @@ export default {
           {
             confirmButtonText: '确 定',
             cancelButtonText: '取 消',
-            type: 'warning'
-          }).then(() => {
-            this.API.positionRemoveBatch(this.ids).then(data => {
-              if (data.success) {
-                this.$message.success(data.message)
-                this.initPosition();
+            type: 'warning',
+            beforeClose: ((action, instance, done) => {
+              if (action === 'confirm') {
+                instance.confirmButtonLoading = true
+                instance.confirmButtonText = '删除中...'
+
+                this.API.positionRemoveBatch(this.ids).then(res => {
+                  instance.confirmButtonLoading = false
+                  if (res.success) {
+                    this.initPosition()
+                    this.$message.success(res.message)
+                    done()
+                  } else {
+                    done()
+                  }
+                }).catch(() => {
+                  instance.confirmButtonLoading = false
+                  instance.confirmButtonText = '确 定'
+                })
+              } else {
+                done()
               }
             })
-      }).catch(() => {})
+          }).catch(() => {})
     },
 
     // ----- 表头样式 -----

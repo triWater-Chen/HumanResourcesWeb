@@ -3,6 +3,7 @@
     <el-form :inline="true">
       <el-form-item>
         <el-input size="small"
+                  clearable
                   v-model="addLevel.name"
                   style="width: 200px;"
                   prefix-icon="el-icon-plus"
@@ -27,6 +28,7 @@
         <el-button icon="el-icon-plus"
                    type="primary"
                    size="small"
+                   :loading="addLoading"
                    @click="addJobLevel"
         >
           添加
@@ -50,6 +52,7 @@
 
     <div>
       <el-table :data="levels"
+                v-loading="loading"
                 border
                 stripe
                 size="small"
@@ -138,6 +141,7 @@
         <el-form-item>
           <el-tag>职称名称</el-tag>
           <el-input v-model="editPost.name"
+                    clearable
                     size="medium"
                     style="width: 200px; margin-left: 10px;"
           />
@@ -164,7 +168,7 @@
       </el-form>
       <span slot="footer" class="dialog-footer">
         <el-button size="small" @click="dialogVisible = false">取 消</el-button>
-        <el-button size="small" type="primary" @click="handleEdit">确 定</el-button>
+        <el-button :loading="buttonLoading" size="small" type="primary" @click="handleEdit">{{ buttonLoading ? '提交中...' : '确 定' }}</el-button>
       </span>
     </el-dialog>
   </div>
@@ -175,6 +179,10 @@ export default {
   name: "JobLevel",
   data() {
     return {
+      loading: true,
+      buttonLoading: false,
+      addLoading: false,
+
       titleLevels: [
         '正高级',
         '副高级',
@@ -210,27 +218,35 @@ export default {
 
     // ----- 初始化数据 -----
     initJobLevel() {
+      this.loading = true
       this.API.jobLevelGet().then(res => {
         if (res.success) {
           this.levels = res.data.list
         }
+        this.loading = false
       })
     },
 
     // ----- 刷新数据 -----
     refreshJobLevel() {
+      this.loading = true
       this.API.jobLevelGet().then(res => {
         if (res.success) {
           this.levels = res.data.list
           this.$message.success("刷新成功")
         }
+        this.loading = false
+      }).catch(() => {
+        this.loading = false
       })
     },
 
     // ----- 添加职称 -----
     addJobLevel() {
       if (this.addLevel.name && this.addLevel.titleLevel) {
+        this.addLoading = true
         this.API.jobLevelAdd(this.addLevel).then(res => {
+          this.addLoading = false
           if (res.success) {
             this.$message.success(res.message)
             this.initJobLevel()
@@ -240,6 +256,8 @@ export default {
             name: '',
             titleLevel: '',
           }
+        }).catch(() => {
+          this.addLoading = false
         })
       } else {
         if (!this.addLevel.name) {
@@ -258,11 +276,26 @@ export default {
           {
             confirmButtonText: '确 定',
             cancelButtonText: '取 消',
-            type: 'warning'
-          }).then(() => {
-            this.API.jobLevelUpdate(data).then(res => {
-              if (res.success) {
-                this.$message.success(text + "成功")
+            type: 'warning',
+            beforeClose: ((action, instance, done) => {
+              if (action === 'confirm') {
+                instance.confirmButtonLoading = true
+                instance.confirmButtonText = text + '中...'
+
+                this.API.jobLevelUpdate(data).then(res => {
+                  instance.confirmButtonLoading = false
+                  if (res.success) {
+                    this.$message.success(text + "成功")
+                    done()
+                  }
+                }).catch(() => {
+                  data.enabled = data.enabled !== true
+                  instance.confirmButtonLoading = false
+                  instance.confirmButtonText = '确 定'
+                  done()
+                })
+              } else {
+                done()
               }
             })
           }).catch(() => {
@@ -277,12 +310,16 @@ export default {
     },
     handleEdit() {
       if (this.editPost.name) {
+        this.buttonLoading = true
         this.API.jobLevelUpdate(this.editPost).then(res => {
+          this.buttonLoading = false
           if (res.success) {
             this.$message.success(res.message)
             this.initJobLevel()
             this.dialogVisible = false
           }
+        }).catch(() => {
+          this.buttonLoading = false
         })
       } else {
         this.$message.error("职称名称不可为空")
@@ -296,14 +333,29 @@ export default {
           {
             confirmButtonText: '确 定',
             cancelButtonText: '取 消',
-            type: 'warning'
-          }).then(() => {
-            const deleteId = []
-            deleteId.push(data.id)
-            this.API.jobLevelRemoveBatch(deleteId).then(res => {
-              if (res.success) {
-                this.$message.success(res.message)
-                this.initJobLevel()
+            type: 'warning',
+            beforeClose: ((action, instance, done) => {
+              if (action === 'confirm') {
+                instance.confirmButtonLoading = true
+                instance.confirmButtonText = '删除中...'
+
+                const deleteId = []
+                deleteId.push(data.id)
+                this.API.jobLevelRemoveBatch(deleteId).then(res => {
+                  instance.confirmButtonLoading = false
+                  if (res.success) {
+                    this.initJobLevel()
+                    this.$message.success(res.message)
+                    done()
+                  } else {
+                    done()
+                  }
+                }).catch(() => {
+                  instance.confirmButtonLoading = false
+                  instance.confirmButtonText = '确 定'
+                })
+              } else {
+                done()
               }
             })
           }).catch(() => {})
@@ -315,20 +367,35 @@ export default {
       this.ids = val.map(item => item.id)
     },
     deleteBatch() {
-      this.$confirm('此操作将永久删除编号为【' + this.ids + '】的职位, 是否继续?',
+      this.$confirm('此操作将永久删除编号为【' + this.ids + '】的职称, 是否继续?',
           '提示',
           {
             confirmButtonText: '确 定',
             cancelButtonText: '取 消',
-            type: 'warning'
-          }).then(() => {
-            this.API.jobLevelRemoveBatch(this.ids).then(data => {
-              if (data.success) {
-                this.$message.success(data.message)
-                this.initJobLevel()
+            type: 'warning',
+            beforeClose: ((action, instance, done) => {
+              if (action === 'confirm') {
+                instance.confirmButtonLoading = true
+                instance.confirmButtonText = '删除中...'
+
+                this.API.jobLevelRemoveBatch(this.ids).then(data => {
+                  instance.confirmButtonLoading = false
+                  if (data.success) {
+                    this.initJobLevel()
+                    this.$message.success(data.message)
+                    done()
+                  } else {
+                    done()
+                  }
+                }).catch(() => {
+                  instance.confirmButtonLoading = false
+                  instance.confirmButtonText = '确 定'
+                })
+              } else {
+                done()
               }
             })
-      }).catch(() => {})
+          }).catch(() => {})
     },
 
     // ----- 表头样式 -----

@@ -136,4 +136,7 @@ export default {
   .el-submenu.is-opened {
     color: #000c17 !important;
   }
+  .el-dialog__title {
+    font-weight: bold;
+  }
 </style>

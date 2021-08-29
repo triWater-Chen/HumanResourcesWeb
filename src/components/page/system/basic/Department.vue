@@ -3,6 +3,7 @@
     <el-form :inline="true">
       <el-form-item>
         <el-input size="small"
+                  clearable
                   v-model="queryDep.name"
                   style="width: 160px;"
                   prefix-icon="el-icon-search"
@@ -61,6 +62,7 @@
 
     <div>
       <el-table :data="departments"
+                v-loading="loading"
                 row-key="id"
                 ref="tableRef"
                 default-expand-all
@@ -118,7 +120,15 @@
                        type="text"
                        icon="el-icon-delete"
                        @click="handleDelete(scope.row)"
-                       v-if="scope.row.parentId !== -1"
+                       v-if="scope.row.children === null"
+            >
+              删除
+            </el-button>
+            <el-button size="small"
+                       type="text"
+                       icon="el-icon-delete"
+                       v-else
+                       disabled
             >
               删除
             </el-button>
@@ -136,7 +146,7 @@
         <el-row>
           <el-col :span="24" v-if="editForm.parentId !== -1">
             <el-form-item style="display: flex; justify-content: center;">
-              <span slot="label" class="treeStyle">上级部门</span>
+              <span slot="label" class="formStyle">上级部门</span>
               <TreeSelect v-model="editForm.parentId"
                           :options="depTree"
                           :normalizer="normalizer"
@@ -150,6 +160,7 @@
             <el-form-item>
               <el-tag>部门名称</el-tag>
               <el-input v-model="editForm.name"
+                        clearable
                         style="width: 280px; margin-left: 10px;"
               />
             </el-form-item>
@@ -176,7 +187,7 @@
       </el-form>
       <span slot="footer" class="dialog-footer">
         <el-button size="small" @click="dialogVisible = false">取 消</el-button>
-        <el-button size="small" type="primary" @click="handleForm">确 定</el-button>
+        <el-button :loading="buttonLoading" size="small" type="primary" @click="handleForm">{{ buttonLoading ? '提交中...' : '确 定' }}</el-button>
       </span>
     </el-dialog>
   </div>
@@ -192,6 +203,9 @@ export default {
   components: { TreeSelect },
   data() {
     return {
+      loading: false,
+      buttonLoading: false,
+
       // 用于查询
       queryDep: {},
       dateRange: [],
@@ -223,9 +237,10 @@ export default {
 
     // ----- 初始化数据 -----
     initDepartment() {
+      this.loading = true
       // 初始化页面树
       this.API.departmentTree().then(res => {
-        if (res.success) {
+        if (res.code === 200) {
           this.departments = res.data.tree
 
           // 使用深拷贝，将树存起来，用于赋值给下拉树
@@ -234,7 +249,11 @@ export default {
           this.depTreeTemp = copy(this.departments)
           // 处理下拉数据
           this.deleteChildren(this.depTreeTemp)
+        } else if (res.code === 500) {
+          this.departments = []
+          this.$message.error(res.message)
         }
+        this.loading = false
       })
     },
 
@@ -247,6 +266,7 @@ export default {
 
     // ----- 刷新数据 -----
     refreshDepartment() {
+      this.loading = true
       this.API.departmentTree().then(res => {
         if (res.success) {
           this.departments = res.data.tree
@@ -255,11 +275,15 @@ export default {
 
           this.$message.success("刷新成功")
         }
+        this.loading = false
+      }).catch(() => {
+        this.loading = false
       })
     },
 
     // ----- 按条件查询 -----
     handleQuery() {
+      this.loading = true
       this.API.departmentGet({
         params: addDateRange(this.queryDep, this.dateRange)
       }).then(res => {
@@ -270,6 +294,7 @@ export default {
           this.departments = []
           this.$message.error(res.message)
         }
+        this.loading = false
       })
       // 重置查询表单
       this.queryDep = {}
@@ -353,25 +378,33 @@ export default {
       } else if (!(this.editForm.sort >= 0)){
         this.$message.error("部门顺序不能为空")
       } else {
+        this.buttonLoading = true
+
         if (this.editForm.id === undefined) {
           // 进行添加
 
           this.API.departmentAdd(this.editForm).then(res => {
+            this.buttonLoading = false
             if (res.success) {
               this.$message.success(res.message)
               this.initDepartment()
               this.dialogVisible = false
             }
+          }).catch(() => {
+            this.buttonLoading = false
           })
         } else {
           // 进行修改
 
           this.API.departmentUpdate(this.editForm).then(res => {
+            this.buttonLoading = false
             if (res.success) {
               this.$message.success(res.message)
               this.initDepartment()
               this.dialogVisible = false
             }
+          }).catch(() => {
+            this.buttonLoading = false
           })
         }
       }
@@ -385,12 +418,27 @@ export default {
           {
             confirmButtonText: '确 定',
             cancelButtonText: '取 消',
-            type: 'warning'
-          }).then(() => {
-            this.API.departmentRemove(data.id).then(res => {
-              if (res.success) {
-                this.$message.success(res.message)
-                this.initDepartment()
+            type: 'warning',
+            beforeClose: ((action, instance, done) => {
+              if (action === 'confirm') {
+                instance.confirmButtonLoading = true
+                instance.confirmButtonText = '删除中...'
+
+                this.API.departmentRemove(data.id).then(res => {
+                  instance.confirmButtonLoading = false
+                  if (res.success) {
+                    this.initDepartment()
+                    this.$message.success(res.message)
+                    done()
+                  } else {
+                    done()
+                  }
+                }).catch(() => {
+                  instance.confirmButtonLoading = false
+                  instance.confirmButtonText = '确 定'
+                })
+              } else {
+                done()
               }
             })
           }).catch(() => {})
@@ -404,8 +452,8 @@ export default {
 }
 </script>
 
-<style scoped>
-.treeStyle {
+<style>
+.formStyle {
   color: #515a6e;
   font-size: 14px;
   font-weight: bold;

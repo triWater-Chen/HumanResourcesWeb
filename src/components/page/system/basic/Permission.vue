@@ -1,8 +1,9 @@
 <template>
   <div class="permissionStyle">
-    <el-form :inline="true">
+    <el-form :inline="true" v-show="showQuery">
       <el-form-item>
         <el-input size="small"
+                  clearable
                   v-model="queryRole.name"
                   style="width: 230px;"
                   placeholder="请输入角色英文名"
@@ -13,6 +14,7 @@
       </el-form-item>
       <el-form-item>
         <el-input size="small"
+                  clearable
                   v-model="queryRole.namezh"
                   style="width: 160px;"
                   placeholder="请输入角色中文名"
@@ -50,6 +52,14 @@
           搜索
         </el-button>
       </el-form-item>
+      <el-form-item>
+        <el-button icon="el-icon-refresh"
+                   size="small"
+                   @click="refreshRole"
+        >
+          重置
+        </el-button>
+      </el-form-item>
     </el-form>
 
     <div>
@@ -73,6 +83,22 @@
           </el-button>
         </el-col>
         <el-col :span="1.5">
+          <el-tooltip effect="dark" content="隐藏搜索栏" placement="top"  v-show="showQuery">
+            <el-button icon="el-icon-zoom-out"
+                       circle
+                       size="mini"
+                       @click="showQuery = false"
+            />
+          </el-tooltip>
+          <el-tooltip effect="dark" content="显示搜索栏" placement="top"  v-show="!showQuery">
+            <el-button icon="el-icon-zoom-in"
+                       circle
+                       size="mini"
+                       @click="showQuery = true"
+            />
+          </el-tooltip>
+        </el-col>
+        <el-col :span="1.5">
           <el-tooltip effect="dark" content="刷新" placement="top">
             <el-button icon="el-icon-refresh"
                        circle
@@ -84,6 +110,7 @@
       </el-row>
 
       <el-table :data="roles"
+                v-loading="loading"
                 border
                 stripe
                 size="small"
@@ -156,6 +183,7 @@
                        type="text"
                        icon="el-icon-delete"
                        @click="handleDelete(scope.row)"
+                       v-if="scope.row.id !== 6"
             >
               删除
             </el-button>
@@ -168,7 +196,7 @@
       <el-pagination background
                      layout="total, sizes, prev, pager, next, jumper"
                      :page-sizes="[6, 10, 100]"
-                     :page-size="6"
+                     :page-size="queryRole.size ? queryRole.size : 6"
                      :total="total"
                      :current-page="queryRole.current"
                      @size-change="handleSizeChange"
@@ -186,6 +214,7 @@
         <el-form-item>
           <el-tag>角色英文名称</el-tag>
           <el-input size="medium"
+                    clearable
                     v-model="editForm.name"
                     style="width: 280px; margin-left: 10px;"
           >
@@ -195,6 +224,7 @@
         <el-form-item>
           <el-tag>角色中文名称</el-tag>
           <el-input v-model="editForm.namezh"
+                    clearable
                     size="medium"
                     style="width: 280px; margin-left: 10px;"
           />
@@ -245,19 +275,24 @@
       </el-form>
       <span slot="footer" class="dialog-footer">
         <el-button size="small" @click="dialogVisible = false">取 消</el-button>
-        <el-button size="small" type="primary" @click="handleForm">确 定</el-button>
+        <el-button :loading="buttonLoading" size="small" type="primary" @click="handleForm">{{ buttonLoading ? '提交中...' : '确 定' }}</el-button>
       </span>
     </el-dialog>
   </div>
 </template>
 
 <script>
+
 import {addDateRange} from "../../../../utils/commonTools";
 
 export default {
   name: "Permission",
   data() {
     return {
+      showQuery: true,
+      loading: false,
+      buttonLoading: false,
+
       multipleSelection: [],
       ids: [],
 
@@ -266,6 +301,7 @@ export default {
         current: 1,
         size: 6,
       },
+      pageSize: 0,
       dateRange: [],
 
       title: '',
@@ -310,13 +346,21 @@ export default {
 
     // ----- 初始化数据 -----
     initRole() {
+      this.loading = true
       this.API.roleGet({
-        params: this.queryRole
+        params: addDateRange(this.queryRole, this.dateRange)
       }).then(res => {
-        if (res.success) {
+        if (res.code === 200) {
           this.roles = res.data.list.records
           this.total = res.data.list.total
+          this.pageSize = res.data.list.records.length
+        } else if (res.code === 500) {
+          this.roles = []
+          this.total = 0
+          this.pageSize = 0
+          this.$message.error(res.message)
         }
+        this.loading = false
       })
     },
 
@@ -331,10 +375,17 @@ export default {
     },
     // ----- 根据角色 id 查询其所属的菜单 -----
     getSelectedMenus(id) {
+      const treeLoading = this.$loading({
+        fullscreen: false,
+        text: '正在获取权限...',
+        background: 'rgba(255, 255, 255, 0.4)',
+        target: document.querySelector(".el-card")
+      })
       this.API.menuIdByRole(id).then(res => {
         if (res.success) {
           // 设置默认勾选的菜单
           this.$refs.tree.setCheckedKeys(res.data.list)
+          treeLoading.close()
         }
       })
     },
@@ -373,6 +424,7 @@ export default {
 
     // ----- 刷新数据 -----
     refreshRole() {
+      this.loading = true
       this.resetForm()
       this.API.roleGet({
         params: this.queryRole
@@ -380,8 +432,12 @@ export default {
         if (res.success) {
           this.roles = res.data.list.records
           this.total = res.data.list.total
+          this.pageSize = res.data.list.records.length
           this.$message.success("刷新成功")
         }
+        this.loading = false
+      }).catch(() => {
+        this.loading = false
       })
     },
 
@@ -398,22 +454,26 @@ export default {
 
     // ----- 按条件查询 -----
     handleQuery() {
+      this.loading = true
+      // 重置分页
       this.queryRole.current = 1
+
       this.API.roleGet({
         params: addDateRange(this.queryRole, this.dateRange)
       }).then(res => {
         if (res.code === 200) {
           this.roles = res.data.list.records
           this.total = res.data.list.total
+          this.pageSize = res.data.list.records.length
           this.$message.success(res.message)
         } else if (res.code === 500) {
           this.roles = []
           this.total = 0
+          this.pageSize = 0
           this.$message.error(res.message)
         }
+        this.loading = false
       })
-      // 重置查询条件
-      this.resetForm()
     },
 
     // ----- 修改角色状态 -----
@@ -424,11 +484,26 @@ export default {
           {
             confirmButtonText: '确 定',
             cancelButtonText: '取 消',
-            type: 'warning'
-          }).then(() => {
-            this.API.roleStatus(data).then(res => {
-              if (res.success) {
-                this.$message.success(text + "成功")
+            type: 'warning',
+            beforeClose: ((action, instance, done) => {
+              if (action === 'confirm') {
+                instance.confirmButtonLoading = true
+                instance.confirmButtonText = text + '中...'
+
+                this.API.roleStatus(data).then(res => {
+                  instance.confirmButtonLoading = false
+                  if (res.success) {
+                    this.$message.success(text + "成功")
+                    done()
+                  }
+                }).catch(() => {
+                  data.enabled = data.enabled !== true
+                  instance.confirmButtonLoading = false
+                  instance.confirmButtonText = '确 定'
+                  done()
+                })
+              } else {
+                done()
               }
             })
           }).catch(() => {
@@ -468,26 +543,36 @@ export default {
       if (this.editForm.name && this.editForm.namezh) {
         const check = /^\w{1,15}$/
         if (check.test(this.editForm.name)) {
+          this.buttonLoading = true
 
           if (this.editForm.id === undefined) {
             // 进行添加
 
             this.API.roleAddOrUpdate(this.editForm).then(res => {
+              this.buttonLoading = false
               if (res.success) {
                 this.$message.success("添加成功")
+                this.resetForm()
                 this.initRole()
                 this.dialogVisible = false
               }
+            }).catch(() => {
+              this.buttonLoading = false
             })
           } else {
             // 进行修改
 
             this.API.roleAddOrUpdate(this.editForm).then(res => {
+              this.buttonLoading = false
               if (res.success) {
                 this.$message.success(res.message)
                 this.initRole()
                 this.dialogVisible = false
+              } else {
+                this.buttonLoading = false
               }
+            }).catch(() => {
+              this.buttonLoading = false
             })
           }
 
@@ -514,14 +599,34 @@ export default {
           {
             confirmButtonText: '确 定',
             cancelButtonText: '取 消',
-            type: 'warning'
-          }).then(() => {
-            const deleteId = []
-            deleteId.push(data.id)
-            this.API.roleRemoveBatch(deleteId).then(res => {
-              if (res.success) {
-                this.$message.success(res.message)
-                this.initRole()
+            type: 'warning',
+            beforeClose: ((action, instance, done) => {
+              if (action === 'confirm') {
+                instance.confirmButtonLoading = true
+                instance.confirmButtonText = '删除中...'
+
+                const deleteId = []
+                deleteId.push(data.id)
+                this.API.roleRemoveBatch(deleteId).then(res => {
+                  instance.confirmButtonLoading = false
+                  if (res.success) {
+
+                    // 判断删除后该页是否还有数据
+                    if (!(this.pageSize - 1 > 0)) {
+                      this.queryRole.current = this.queryRole.current - 1 ? this.queryRole.current : 1
+                    }
+                    this.initRole()
+                    this.$message.success(res.message)
+                    done()
+                  } else {
+                    done()
+                  }
+                }).catch(() => {
+                  instance.confirmButtonLoading = false
+                  instance.confirmButtonText = '确 定'
+                })
+              } else {
+                done()
               }
             })
           }).catch(() => {})
@@ -538,12 +643,32 @@ export default {
           {
             confirmButtonText: '确 定',
             cancelButtonText: '取 消',
-            type: 'warning'
-          }).then(() => {
-            this.API.roleRemoveBatch(this.ids).then(data => {
-              if (data.success) {
-                this.$message.success(data.message)
-                this.initRole()
+            type: 'warning',
+            beforeClose: ((action, instance, done) => {
+              if (action === 'confirm') {
+                instance.confirmButtonLoading = true
+                instance.confirmButtonText = '删除中...'
+
+                this.API.roleRemoveBatch(this.ids).then(data => {
+                  instance.confirmButtonLoading = false
+                  if (data.success) {
+
+                    // 判断删除后该页是否还有数据
+                    if (!(this.pageSize - this.ids.length > 0)) {
+                      this.queryRole.current = this.queryRole.current - 1 ? this.queryRole.current : 1
+                    }
+                    this.initRole()
+                    this.$message.success(data.message)
+                    done()
+                  } else {
+                    done()
+                  }
+                }).catch(() => {
+                  instance.confirmButtonLoading = false
+                  instance.confirmButtonText = '确 定'
+                })
+              } else {
+                done()
               }
             })
           }).catch(() => {})

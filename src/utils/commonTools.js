@@ -27,6 +27,8 @@ export function copy (obj) {
  */
 export function addDateRange(params, dateRange) {
     const search = params
+    search.beginTime = undefined
+    search.endTime = undefined
     if (null !== dateRange && '' !== dateRange) {
         search.beginTime = dateRange[0]
         search.endTime = dateRange[1]
