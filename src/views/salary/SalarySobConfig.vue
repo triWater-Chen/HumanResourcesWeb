@@ -107,7 +107,76 @@
                          align="center"
         >
           <template slot-scope="scope">
-            <el-tag effect="dark" size="medium" >{{ scope.row.department.name }}</el-tag>
+            <el-tag size="medium" >{{ scope.row.department.name }}</el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column label="所属账套"
+                         min-width="140"
+                         align="center"
+        >
+          <template slot-scope="scope">
+            <el-tooltip placement="right" v-if="scope.row.salary">
+              <div slot="content">
+                <table>
+                  <tr>
+                    <td>基本工资</td>
+                    <td>{{scope.row.salary.basicSalary}}</td>
+                  </tr>
+                  <tr>
+                    <td>交通补助</td>
+                    <td>{{scope.row.salary.trafficSalary}}</td>
+                  </tr>
+                  <tr>
+                    <td>午餐补助</td>
+                    <td>{{scope.row.salary.lunchSalary}}</td>
+                  </tr>
+                  <tr>
+                    <td>奖金</td>
+                    <td>{{scope.row.salary.bonus}}</td>
+                  </tr>
+                  <tr>
+                    <td>养老金比率</td>
+                    <td>{{scope.row.salary.pensionPer}}</td>
+                  </tr>
+                  <tr>
+                    <td>养老金基数</td>
+                    <td>{{scope.row.salary.pensionBase}}</td>
+                  </tr>
+                  <tr>
+                    <td>医疗保险比率</td>
+                    <td>{{scope.row.salary.medicalPer}}</td>
+                  </tr>
+                  <tr>
+                    <td>医疗保险基数</td>
+                    <td>{{scope.row.salary.medicalBase}}</td>
+                  </tr>
+                  <tr>
+                    <td>公积金比率</td>
+                    <td>{{scope.row.salary.accumulationFundPer}}</td>
+                  </tr>
+                  <tr>
+                    <td>公积金基数</td>
+                    <td>{{scope.row.salary.accumulationFundBase}}</td>
+                  </tr>
+                  <tr>
+                    <td>启用时间</td>
+                    <td>{{scope.row.salary.createdate}}</td>
+                  </tr>
+                </table>
+              </div>
+              <el-tag effect="dark"
+                      disable-transitions
+              >
+                {{scope.row.salary.name}}
+              </el-tag>
+            </el-tooltip>
+            <el-tag effect="dark"
+                    type="info"
+                    v-else
+                    disable-transitions
+            >
+              暂未设置
+            </el-tag>
           </template>
         </el-table-column>
         <el-table-column label="操作"
@@ -117,13 +186,30 @@
                          min-width="130"
         >
           <template slot-scope="scope">
-            <el-button size="small"
-                       type="text"
-                       icon="el-icon-edit"
-                       @click="showEdit(scope.row)"
+            <el-popover placement="left"
+                        title="修改工资账套"
+                        @show="showPop(scope.row.salary)"
+                        @hide="hidePop(scope.row)"
+                        width="200"
+                        trigger="click"
             >
-              编辑
-            </el-button>
+              <div>
+                <el-select v-model="currentSob" placeholder="请选择" size="mini">
+                  <el-option   v-for="item in sobs"
+                               :key="item.id"
+                               :label="item.name"
+                               :value="item.id"
+                  />
+                </el-select>
+              </div>
+              <el-button slot="reference"
+                         size="small"
+                         type="text"
+                         icon="el-icon-edit"
+              >
+                修改工资账套
+              </el-button>
+            </el-popover>
           </template>
         </el-table-column>
       </el-table>
@@ -181,10 +267,19 @@ export default {
 
       departments: [],
       salaries: [],
+
+      sobs: [],
+      currentSob: null,
+
+      // 仅声明下，取消未解析变量的报错
+      salary: '',
+      workId: '',
+      department: '',
     }
   },
 
   mounted() {
+    this.initVarData()
     this.initSalary()
   },
 
@@ -193,7 +288,6 @@ export default {
     // ----- 初始化数据 -----
     initSalary() {
       this.loading = true
-      this.initDepartment()
       this.API.salaryGet({
         params: this.querySalary
       }).then(res => {
@@ -209,12 +303,17 @@ export default {
       })
     },
 
-    // ----- 初始化部门列表 -----
-    initDepartment() {
+    // ----- 初始化下拉数据列表 -----
+    initVarData() {
       this.API.salaryOfDepartments().then(res => {
         if (res.success) {
           this.departments = res.data.departments
           this.deleteChildren(this.departments)
+        }
+      })
+      this.API.salaryOfSobs().then(res => {
+        if (res.success) {
+          this.sobs = res.data.sobs
         }
       })
     },
@@ -265,7 +364,7 @@ export default {
     refreshRole() {
       this.loading = true
       this.resetForm()
-      this.initDepartment()
+      this.initVarData()
       this.API.salaryGet({
         params: this.querySalary
       }).then(res => {
@@ -304,8 +403,52 @@ export default {
       })
     },
 
-    showEdit() {},
+    // ----- 修改账套 -----
+    showPop(data) {
+      if (data) {
+        this.currentSob = data.id
+      } else {
+        this.currentSob = null
+      }
+    },
+    hidePop(data) {
+      if (this.currentSob) {
+        this.$confirm('确定修改将该员工账套吗?',
+            '提示',
+            {
+              confirmButtonText: '确 定',
+              cancelButtonText: '取 消',
+              type: 'warning',
+              beforeClose: ((action, instance, done) => {
+                if (action === 'confirm') {
+                  instance.confirmButtonLoading = true
+                  instance.confirmButtonText = '修改中...'
 
+                  let empSalary = {
+                    eid: data.id,
+                    sid: this.currentSob
+                  }
+                  this.API.salaryUpdate(empSalary).then(res => {
+                    instance.confirmButtonLoading = false
+                    if (res.success) {
+                      this.initSalary()
+                      this.$message.success(res.message)
+                      done()
+                    } else {
+                      done()
+                    }
+                  }).catch(() => {
+                    instance.confirmButtonLoading = false
+                    instance.confirmButtonText = '确 定'
+                    done()
+                  })
+                } else {
+                  done()
+                }
+              })
+            }).catch(() => {})
+      }
+    },
 
     // ----- 表头样式 -----
     myTableStyle() {

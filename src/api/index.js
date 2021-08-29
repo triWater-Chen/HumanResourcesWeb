@@ -170,14 +170,11 @@ export default {
     salaryGet(params) {
         return get('/salary/sobConfig/list', params)
     },
-    salaryAdd(params) {
-        return post('/salary/sobConfig/add', params)
-    },
     salaryUpdate(params) {
         return post('/salary/sobConfig/update', params)
     },
-    salaryRemoveBatch(params) {
-        return post('/salary/sobConfig/removeBatch', params)
+    salaryOfSobs() {
+        return get('/salary/sobConfig/sobs')
     },
     salaryOfDepartments() {
         return get('/salary/sobConfig/departments')
