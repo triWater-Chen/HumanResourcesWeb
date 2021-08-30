@@ -1,16 +1,27 @@
 <template>
   <el-header class="homeHeader">
     <div class="title">人事管理</div>
-    <el-dropdown class="userInfo" @command="commandHandler">
-      <span class="el-dropdown-link">
-        <i><img :src="user.userFace" alt=""></i>{{user.name}}
-      </span>
-      <el-dropdown-menu slot="dropdown">
-        <el-dropdown-item command="userinfo">个人中心</el-dropdown-item>
-        <el-dropdown-item command="setting">设置</el-dropdown-item>
-        <el-dropdown-item command="logout" divided>登出</el-dropdown-item>
-      </el-dropdown-menu>
-    </el-dropdown>
+    <div>
+      <el-col :span="7">
+        <el-button icon="el-icon-bell"
+                   type="text"
+                   @click="goChat"
+                   style="margin-top: 3px; font-size: x-large"
+        />
+      </el-col>
+      <el-col :span="7" style="margin-right: 15px">
+        <el-dropdown class="userInfo" @command="commandHandler">
+        <span class="el-dropdown-link">
+          <i><img :src="user.userFace" alt=""></i>{{user.name}}
+        </span>
+          <el-dropdown-menu slot="dropdown">
+            <el-dropdown-item command="userinfo">个人中心</el-dropdown-item>
+            <el-dropdown-item command="setting">设置</el-dropdown-item>
+            <el-dropdown-item command="logout" divided>登出</el-dropdown-item>
+          </el-dropdown-menu>
+        </el-dropdown>
+      </el-col>
+    </div>
   </el-header>
 </template>
 
@@ -28,6 +39,9 @@ export default {
     }
   },
   methods: {
+
+    goChat() {
+    },
 
     commandHandler(param) {
       if (param === 'logout') {
@@ -75,11 +89,12 @@ export default {
 
 .homeHeader .userInfo {
   cursor: pointer;
+  margin-top: 4px;
 }
 
 .el-dropdown-link img {
-  width: 40px;
-  height: 40px;
+  width: 45px;
+  height: 45px;
   border-radius: 24px;
   margin-right: 8px;
 }
