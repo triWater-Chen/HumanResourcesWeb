@@ -1,0 +1,57 @@
+<template>
+  <div id="userText">
+    <textarea placeholder="按 Enter 发送"
+              v-model="content"
+              @keydown="addMessage"
+    />
+  </div>
+</template>
+
+<script>
+
+import {mapState} from "vuex";
+
+export default {
+  name: 'UserText',
+  data () {
+    return {
+      content:''
+    }
+  },
+
+  computed: mapState([
+    'currentSession'
+  ]),
+
+  methods: {
+    addMessage (e) {
+      if (e.keyCode === 13 && this.content.length) {
+        let msgObj = {}
+        msgObj.to = this.currentSession.username
+        msgObj.content = this.content
+        this.$store.state.stomp.send('/ws/chat', {}, JSON.stringify(msgObj))
+        this.$store.commit('addMessage', msgObj)
+        this.content = ''
+      }
+    }
+  }
+}
+</script>
+
+<style lang="scss" scoped>
+#userText {
+	position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 100%;
+  height: 30%;
+  border-top: solid 1px #DDD;
+  > textarea {
+    padding: 10px;
+    width: 100%;
+    height: 100%;
+    border: none;
+    outline: none;
+  }
+}
+</style>

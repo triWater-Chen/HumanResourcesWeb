@@ -16,6 +16,10 @@ export default {
     getMenu() {
         return get('/system/menu')
     },
+    // 获取聊天用户列表
+    getChatUser() {
+        return get('/chat/hrs')
+    },
     // 下载文件
     downloadFile(params) {
         window.open('/cl/system/download?fileName=' + params + '&delete=true', '_parent')

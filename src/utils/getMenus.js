@@ -28,6 +28,7 @@ export const saveMenu = (router, store) => {
             }
             store.commit('saveRoutes', finalRoutes)
             SessionStorage.set("menuLoading", false)
+            store.dispatch('connect')
         }
     }).catch(() => {
         SessionStorage.set("menuLoading", false)

@@ -15,8 +15,8 @@
           <i><img :src="user.userFace" alt=""></i>{{user.name}}
         </span>
           <el-dropdown-menu slot="dropdown">
-            <el-dropdown-item command="userinfo">个人中心</el-dropdown-item>
-            <el-dropdown-item command="setting">设置</el-dropdown-item>
+            <el-dropdown-item command="userInfo">个人中心</el-dropdown-item>
+            <el-dropdown-item command="setting" disabled>设置</el-dropdown-item>
             <el-dropdown-item command="logout" divided>登出</el-dropdown-item>
           </el-dropdown-menu>
         </el-dropdown>
@@ -41,6 +41,7 @@ export default {
   methods: {
 
     goChat() {
+      this.$router.push('/chat')
     },
 
     commandHandler(param) {
@@ -60,8 +61,8 @@ export default {
                 }
               })
         })
-      } else if (param === 'userinfo') {
-        //
+      } else if (param === 'userInfo') {
+        this.$router.push('/info')
       }
     }
   }

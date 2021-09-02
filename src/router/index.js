@@ -3,6 +3,8 @@ import VueRouter from 'vue-router'
 import Home from '../views/Home.vue'
 import About from '../views/About'
 import Login from "../views/Login"
+import ChenChat from "../views/chat/ChenChat";
+import UserInfo from "../views/UserInfo";
 import {saveMenu} from "../utils/getMenus"
 import store from '../store'
 import {SessionStorage} from "../utils/sessionStorage";
@@ -14,6 +16,17 @@ const routes = [
     path: '/',
     name: 'Home',
     component: Home,
+    children: [
+      {
+        path: '/chat',
+        name: '在线聊天',
+        component: ChenChat,
+      }, {
+        path: '/info',
+        name: '个人中心',
+        component: UserInfo,
+      }
+    ]
   },
   {
     path: '/login',

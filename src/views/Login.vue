@@ -89,6 +89,7 @@ export default {
           this.API.login(this.loginForm).then(res => {
             this.loading = false
             if (res.success) {
+              this.$store.commit('INIT_CURRENT_HR', res.data.user)
               this.SessionStorage.set("USER", res.data.user)
               this.$router.replace('/')
             }
