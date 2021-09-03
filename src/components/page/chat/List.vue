@@ -6,7 +6,9 @@
           :class="{ active: currentSession ? item.username === currentSession.username : false}"
           @click="changeCurrentSession(item)"
       >
-        <img class="avatar" :src="item.userFace" :alt="item.name">
+        <el-badge :is-dot="isDot[user.username+'#'+item.username]">
+          <img class="avatar" :src="item.userFace" :alt="item.name">
+        </el-badge>
         <p class="name">{{item.name}}</p>
       </li>
     </ul>
@@ -56,8 +58,8 @@ export default {
   }
 
   .avatar {
-    width: 30px;
-    height: 30px;
+    width: 35px;
+    height: 35px;
     vertical-align: middle;
     border-radius: 24px;
   }

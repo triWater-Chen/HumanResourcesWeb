@@ -89,8 +89,7 @@ const store =  new Vuex.Store({
           if (!context.state.currentSession || receiveMsg.from !== context.state.currentSession.username) {
             Notification.info({
               title: '【' + receiveMsg.fromNickName + '】发来一条消息',
-              message: receiveMsg.content.length > 10 ? receiveMsg.content.substr(0, 10) : receiveMsg.content,
-              position: 'top-right'
+              message: receiveMsg.content.length > 10 ? receiveMsg.content.substr(0, 10) + '...' : receiveMsg.content
             })
             Vue.set(context.state.isDot, context.state.currentHr.username + '#' + receiveMsg.from, true)
           }

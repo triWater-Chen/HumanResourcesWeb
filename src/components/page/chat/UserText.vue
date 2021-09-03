@@ -1,8 +1,9 @@
 <template>
   <div id="userText">
-    <textarea placeholder="按 Enter 发送"
+    <textarea placeholder="按 Ctrl + Enter 换行"
               v-model="content"
               @keydown="addMessage"
+              v-if="currentSession"
     />
   </div>
 </template>
@@ -25,7 +26,11 @@ export default {
 
   methods: {
     addMessage (e) {
-      if (e.keyCode === 13 && this.content.length) {
+      if ((e.keyCode === 13 && e.ctrlKey) || (e.keyCode === 10 && e.ctrlKey)) {
+        this.content += "\n"
+      } else if (e.keyCode === 13 && this.content.length && !e.ctrlKey) {
+        //禁止回车的默认换行
+        e.preventDefault()
         let msgObj = {}
         msgObj.to = this.currentSession.username
         msgObj.content = this.content

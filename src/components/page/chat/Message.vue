@@ -37,7 +37,7 @@ export default {
       if (date) {
         date = new Date(date);
       }
-      return `${date.getHours()}:${date.getMinutes()}`;
+      return `${date.getHours()}:${date.getMinutes()}`
     }
   },
 
@@ -82,9 +82,9 @@ export default {
     .avatar {
       float: left;
       margin: 0 10px 0 0;
-      border-radius: 3px;
-      width: 30px;
-      height: 30px;
+      border-radius: 24px;
+      width: 35px;
+      height: 35px;
 	}
     .text {
       display: inline-block;
@@ -93,6 +93,8 @@ export default {
       background-color: #fafafa;
       border-radius: 4px;
       line-height: 30px;
+      margin-top: 0;
+      white-space: pre;
     }
   }
   .self {
@@ -100,9 +102,9 @@ export default {
     .avatar {
       float: right;
       margin: 0 0 0 10px;
-      border-radius: 3px;
-      width: 30px;
-      height: 30px;
+      border-radius: 24px;
+      width: 35px;
+      height: 35px;
     }
     .text {
       display: inline-block;
@@ -111,6 +113,8 @@ export default {
       background-color: #b2e281;
       border-radius: 4px;
       line-height: 30px;
+      margin-top: 0;
+      white-space: pre;
     }
   }
 }
